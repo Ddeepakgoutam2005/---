@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base fonts from Google Fonts for better UI/UX */
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Poppins', Arial, 'Helvetica Neue', sans-serif;
+}
+
+html, body {
+  font-family: var(--font-sans);
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+/* Dark mode base */
+html.dark {
+  background-color: #0f172a; /* slate-900 */
+  color-scheme: dark;
+}
+
+/* Base text colors for readability in both themes */
+/* Force dark-only text color */
+body {
+  color: #e2e8f0; /* slate-200 */
+}

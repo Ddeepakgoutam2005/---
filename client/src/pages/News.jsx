@@ -1,0 +1,75 @@
+import { useEffect, useMemo, useState } from 'react';
+import { apiGet, apiPost, getToken } from '../lib/api.js';
+import { API_URL } from '../lib/api.js';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
+export default function News() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(9);
+
+  async function loadNews() {
+    const data = await apiGet('/api/news');
+    setItems(data);
+  }
+
+  useEffect(() => {
+    AOS.init({ duration: 600, once: true, offset: 80 });
+    loadNews().then(() => setTimeout(() => AOS.refresh(), 100)).catch(console.error);
+  }, []);
+
+  async function fetchAndSave() {
+    try {
+      setLoading(true);
+      const token = getToken();
+      if (!token) throw new Error('Admin login required');
+      await apiPost('/api/admin/refresh', { saveNews: true, recomputeMetrics: false, geminiSummarize: true });
+      await loadNews();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-black dark:text-slate-100">Latest Political News</h2>
+        {getToken() && (
+          <button onClick={fetchAndSave} disabled={loading} className="bg-saffron text-white px-4 py-2 rounded hover:opacity-90">
+            {loading ? 'Fetching…' : 'Admin: Refresh News'}
+          </button>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <div className="text-center text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-800/70 rounded-lg shadow p-8" data-aos="fade-up">
+          <div className="text-xl font-semibold mb-2">No news yet</div>
+          <div className="text-slate-800 dark:text-slate-300 mb-4">Try fetching latest updates or check back later.</div>
+          <div className="text-sm text-slate-700 dark:text-slate-400">Pro tip: Use the "Fetch & Save News" button above.</div>
+        </div>
+      ) : (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.slice(0, visible).map((n) => (
+              <a key={n._id} href={n.url} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-700 bg-slate-800/70 backdrop-blur shadow-sm hover:shadow-md p-4" data-aos="fade-up">
+                <div className="font-semibold mb-1 dark:text-slate-100">{n.headline}</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs px-2 py-1 rounded bg-slate-700 text-slate-100">{n.source || 'Source'}</span>
+                  {n.sentiment && <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{n.sentiment}</span>}
+                  <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{n.relevanceScore ? `Score ${n.relevanceScore}` : 'General'}</span>
+                  <span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">{n.publishedAt ? new Date(n.publishedAt).toLocaleDateString() : '—'}</span>
+                </div>
+                {n.summary && <div className="text-sm text-slate-700 dark:text-slate-200 line-clamp-3">{n.summary}</div>}
+              </a>
+            ))}
+          </div>
+          {items.length > visible && (
+            <div className="flex justify-center">
+              <button className="mt-2 px-4 py-2 rounded bg-blue-600 text-white" onClick={() => setVisible(v => v + 9)}>Load More</button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

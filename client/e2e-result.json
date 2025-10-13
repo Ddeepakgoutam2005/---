@@ -1,0 +1,19 @@
+﻿{
+    "importFromNews":  {
+                           "ok":  true,
+                           "upserted":  9,
+                           "linked":  9,
+                           "metricsUpdated":  1,
+                           "source":  "heuristic"
+                       },
+    "login":  {
+                  "ok":  true
+              },
+    "refresh":  {
+                    "ok":  true,
+                    "feedsProcessed":  6,
+                    "articlesSaved":  55,
+                    "aiSummarized":  0,
+                    "metricsUpdated":  17
+                }
+}
