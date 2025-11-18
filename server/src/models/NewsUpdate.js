@@ -9,6 +9,10 @@ const newsUpdateSchema = new mongoose.Schema({
   sentiment: { type: String },
   relevanceScore: { type: Number },
   publishedAt: { type: Date },
+  isPromiseCandidate: { type: Boolean, default: false },
+  promiseScore: { type: Number, default: 0 },
+  candidateLog: { type: String },
+  candidateMinister: { type: mongoose.Schema.Types.ObjectId, ref: 'Minister', required: false },
 }, { timestamps: true });
 
 newsUpdateSchema.index({ url: 1 }, { unique: true });

@@ -147,7 +147,7 @@ async function run() {
     description: p.description || '',
     category: p.category || '',
     dateMade: p.dateMade || '2022-01-01',
-    status: ['pending','in_progress','completed','broken'].includes(p.status) ? p.status : 'pending',
+    status: ['pending','completed','broken'].includes(p.status) ? p.status : 'pending',
     sourceUrl: p.sourceUrl || ''
   })).filter(p => p.ministerName && p.title);
 

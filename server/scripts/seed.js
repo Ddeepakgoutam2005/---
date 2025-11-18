@@ -19,7 +19,7 @@ async function run() {
   const [modi, shah, nirmala] = ministers;
 
   await PromiseModel.insertMany([
-    { minister: modi._id, title: 'Develop smart cities', dateMade: new Date('2019-06-01'), status: 'in_progress', sourceUrl: 'https://example.com' },
+    { minister: modi._id, title: 'Develop smart cities', dateMade: new Date('2019-06-01'), status: 'completed', sourceUrl: 'https://example.com' },
     { minister: shah._id, title: 'Strengthen internal security', dateMade: new Date('2020-01-15'), status: 'pending' },
     { minister: nirmala._id, title: 'Boost MSME sector', dateMade: new Date('2021-08-01'), status: 'completed' },
   ]);

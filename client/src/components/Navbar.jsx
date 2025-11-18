@@ -1,17 +1,16 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getToken } from '../lib/api.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    const hasToken = !!getToken();
-    setIsAdmin(hasToken);
-    // Force dark mode
+    setIsAdmin(!!user && user.role === 'admin');
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'dark');
-  }, []);
+  }, [user]);
 
   return (
     <header className="sticky top-0 z-50 bg-slate-900/70 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
@@ -31,7 +30,16 @@ export default function Navbar() {
               <NavLink to="/news" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>News</NavLink>
               <NavLink to="/privacy" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Privacy</NavLink>
               {isAdmin && <NavLink to="/admin" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Admin</NavLink>}
+              {isAdmin && <NavLink to="/admin/queries" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Queries</NavLink>}
+              {user && <NavLink to="/my/queries" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>My Queries</NavLink>}
             </nav>
+            <div className="flex items-center gap-3">
+              {!user ? (
+                <NavLink to="/auth" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Login</NavLink>
+              ) : (
+                <button onClick={logout} className="text-slate-200 hover:text-blue-300 transition-colors">Logout</button>
+              )}
+            </div>
           </div>
         </div>
       </div>

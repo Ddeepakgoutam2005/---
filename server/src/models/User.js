@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,5 +7,9 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ['admin', 'viewer'], default: 'viewer' },
 }, { timestamps: true });
+
+userSchema.methods.comparePassword = async function(password) {
+  return bcrypt.compare(password, this.passwordHash);
+};
 
 export default mongoose.model('User', userSchema);

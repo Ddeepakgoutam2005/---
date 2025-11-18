@@ -29,7 +29,7 @@ Return STRICTLY a JSON array (no prose, no Markdown) of political promises mappe
   "description"?: string,
   "category"?: string,
   "dateMade": string, // YYYY-MM-DD
-  "status": "pending" | "in_progress" | "completed" | "broken",
+  "status": "pending" | "completed" | "broken",
   "sourceUrl"?: string
 }
 Include at least 40 promises, balanced across ministries.
@@ -72,8 +72,9 @@ function buildNewsToPromisesPrompt(newsItems, ministerNames) {
   const articles = newsItems.map(n => ({ headline: n.headline, summary: n.summary || '', url: n.url || '', publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString().slice(0,10) : '' }));
   const context = JSON.stringify(articles);
   const namesList = ministerNames.join(', ');
-  return `You are an information extraction system. Given the following Indian political news articles as JSON, extract only promises or policy commitments attributable to the listed Indian ministers. Use EXACT minister names from this list: ${namesList}.
-Return STRICTLY a JSON array (no prose, no Markdown). Fields:\n{
+  return `You are an information extraction system. Given the Indian political news articles below, return only explicit, future-oriented commitments made by the named ministers. Use EXACT names from this list: ${namesList}.
+Return STRICTLY a JSON array (no prose). Each item:
+{
   "ministerName": string,
   "title": string,
   "description"?: string,
@@ -81,7 +82,18 @@ Return STRICTLY a JSON array (no prose, no Markdown). Fields:\n{
   "dateMade": string, // YYYY-MM-DD (use article published date)
   "status": "pending" | "in_progress" | "completed" | "broken",
   "sourceUrl": string
-}\nOnly include items directly attributable to a minister (ignore general news without a minister commitment).\nArticles JSON:\n${context}`;
+}
+Rules: Extract only explicit commitments by a minister (e.g., "will", "pledge", "commit", "plan to"). Ignore general news, speculation, or commentary. Return [] if none.
+Articles JSON:\n${context}`;
+}
+
+function buildNewsClassifierPrompt(newsItems, ministerNames) {
+  const articles = newsItems.map(n => ({ headline: n.headline, summary: n.summary || '', url: n.url || '', publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString().slice(0,10) : '' }));
+  const context = JSON.stringify(articles);
+  const namesList = ministerNames.join(', ');
+  return `Classify which articles contain an explicit, verifiable commitment by a named minister. Use EXACT minister names from: ${namesList}.
+Return STRICTLY a JSON array of strings where each string is the article "url" that contains a minister's explicit promise (future-oriented commitment). Return [] if none.
+Articles JSON:\n${context}`;
 }
 
 // Expanded dataset of Indian ministers with photos and bios
@@ -205,7 +217,92 @@ const ministersData = [
     party: 'BJP',
     photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bhupender_Yadav.jpg',
     bio: 'Bhupender Yadav manages environment and labour portfolios.'
-  }
+  },
+  // INC (Congress)
+  {
+    name: 'Siddaramaiah',
+    ministry: 'Chief Minister of Karnataka',
+    party: 'INC',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Siddaramaiah_2016.jpg',
+    bio: 'Siddaramaiah is serving as the Chief Minister of Karnataka from INC.'
+  },
+  {
+    name: 'A. Revanth Reddy',
+    ministry: 'Chief Minister of Telangana',
+    party: 'INC',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/A_Revanth_Reddy_2021.jpg',
+    bio: 'A. Revanth Reddy is the Chief Minister of Telangana and senior INC leader.'
+  },
+  {
+    name: 'P. Chidambaram',
+    ministry: 'Finance (former)',
+    party: 'INC',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/70/P_Chidambaram.jpg',
+    bio: 'P. Chidambaram is a senior Congress leader and former Union Finance Minister.'
+  },
+  // AAP
+  {
+    name: 'Arvind Kejriwal',
+    ministry: 'Chief Minister of Delhi',
+    party: 'AAP',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Arvind_Kejriwal.jpg',
+    bio: 'Arvind Kejriwal is the National Convener of AAP and Chief Minister of Delhi.'
+  },
+  {
+    name: 'Bhagwant Mann',
+    ministry: 'Chief Minister of Punjab',
+    party: 'AAP',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Bhagwant_Mann_2022.jpg',
+    bio: 'Bhagwant Mann is the Chief Minister of Punjab from AAP.'
+  },
+  // BSP
+  {
+    name: 'Mayawati',
+    ministry: 'Former Chief Minister of Uttar Pradesh',
+    party: 'BSP',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/19/The_Chief_Minister_of_Uttar_Pradesh%2C_Kumari_Mayawati.jpg',
+    bio: 'Mayawati is the President of BSP and served four terms as Chief Minister of Uttar Pradesh.'
+  },
+  { name: 'Yogi Adityanath', ministry: 'Chief Minister of Uttar Pradesh', party: 'BJP', photoUrl: '', bio: 'Yogi Adityanath is the Chief Minister of Uttar Pradesh.' },
+  { name: 'Himanta Biswa Sarma', ministry: 'Chief Minister of Assam', party: 'BJP', photoUrl: '', bio: 'Himanta Biswa Sarma is the Chief Minister of Assam.' },
+  { name: 'Shivraj Singh Chouhan', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'BJP', photoUrl: '', bio: 'Shivraj Singh Chouhan served multiple terms as CM of Madhya Pradesh.' },
+  { name: 'Ashok Gehlot', ministry: 'Former Chief Minister of Rajasthan', party: 'INC', photoUrl: '', bio: 'Ashok Gehlot is a senior Congress leader and former CM of Rajasthan.' },
+  { name: 'Bhupesh Baghel', ministry: 'Former Chief Minister of Chhattisgarh', party: 'INC', photoUrl: '', bio: 'Bhupesh Baghel is a Congress leader and former CM of Chhattisgarh.' },
+  { name: 'Kamal Nath', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'INC', photoUrl: '', bio: 'Kamal Nath is a veteran Congress leader and former CM of MP.' },
+  { name: 'M. K. Stalin', ministry: 'Chief Minister of Tamil Nadu', party: 'DMK', photoUrl: '', bio: 'MK Stalin is the DMK leader and Chief Minister of Tamil Nadu.' },
+  { name: 'Pinarayi Vijayan', ministry: 'Chief Minister of Kerala', party: 'CPI(M)', photoUrl: '', bio: 'Pinarayi Vijayan is the Chief Minister of Kerala from CPI(M).'},
+  { name: 'Mamata Banerjee', ministry: 'Chief Minister of West Bengal', party: 'TMC', photoUrl: '', bio: 'Mamata Banerjee is the Chief Minister of West Bengal and leader of TMC.' },
+  { name: 'Nitish Kumar', ministry: 'Chief Minister of Bihar', party: 'JD(U)', photoUrl: '', bio: 'Nitish Kumar is the Chief Minister of Bihar.' },
+  { name: 'Eknath Shinde', ministry: 'Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: '', bio: 'Eknath Shinde is the Chief Minister of Maharashtra.' },
+  { name: 'Uddhav Thackeray', ministry: 'Former Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: '', bio: 'Uddhav Thackeray served as CM of Maharashtra.' },
+  { name: 'K. Chandrashekar Rao', ministry: 'Former Chief Minister of Telangana', party: 'BRS', photoUrl: '', bio: 'KCR is the founder of BRS and former CM of Telangana.' },
+  { name: 'Naveen Patnaik', ministry: 'Former Chief Minister of Odisha', party: 'BJD', photoUrl: '', bio: 'Naveen Patnaik served as the long-time CM of Odisha.' },
+  { name: 'Sarbananda Sonowal', ministry: 'Ports, Shipping and Waterways; AYUSH', party: 'BJP', photoUrl: '', bio: 'Sarbananda Sonowal is a Union Minister handling ports and AYUSH.' },
+  { name: 'Jyotiraditya Scindia', ministry: 'Civil Aviation', party: 'BJP', photoUrl: '', bio: 'Jyotiraditya Scindia is the Minister of Civil Aviation.' },
+  { name: 'Kiren Rijiju', ministry: 'Law and Justice', party: 'BJP', photoUrl: '', bio: 'Kiren Rijiju has served as Minister of Law and Justice.' },
+  { name: 'Arjun Ram Meghwal', ministry: 'Law and Justice (MoS)', party: 'BJP', photoUrl: '', bio: 'Arjun Ram Meghwal has served as MoS for Law and Justice.' },
+  { name: 'Rajeev Chandrasekhar', ministry: 'Electronics and IT (MoS)', party: 'BJP', photoUrl: '', bio: 'Rajeev Chandrasekhar is MoS for Electronics and IT.' },
+  { name: 'Giriraj Singh', ministry: 'Rural Development', party: 'BJP', photoUrl: '', bio: 'Giriraj Singh has served as Minister for Rural Development.' },
+  { name: 'Parshottam Rupala', ministry: 'Fisheries, Animal Husbandry and Dairying', party: 'BJP', photoUrl: '', bio: 'Parshottam Rupala leads fisheries and animal husbandry.' },
+  { name: 'Mahendra Nath Pandey', ministry: 'Heavy Industries', party: 'BJP', photoUrl: '', bio: 'Mahendra Nath Pandey has served as Minister of Heavy Industries.' },
+  { name: 'G. Kishan Reddy', ministry: 'Culture; Development of North Eastern Region', party: 'BJP', photoUrl: '', bio: 'G Kishan Reddy has served as Minister of Culture and DoNER.' },
+  { name: 'Anupriya Patel', ministry: 'Commerce and Industry (MoS)', party: 'Apna Dal (S)', photoUrl: '', bio: 'Anupriya Patel is MoS for Commerce and Industry.' },
+  { name: 'Jitendra Singh', ministry: 'PMO; Science and Technology (MoS)', party: 'BJP', photoUrl: '', bio: 'Jitendra Singh is MoS in PMO and S&T.' },
+  { name: 'V. K. Singh', ministry: 'Civil Aviation; MEA (MoS)', party: 'BJP', photoUrl: '', bio: 'Gen VK Singh has served as MoS in multiple ministries.' },
+  { name: 'Meenakshi Lekhi', ministry: 'External Affairs; Culture (MoS)', party: 'BJP', photoUrl: '', bio: 'Meenakshi Lekhi is MoS for External Affairs and Culture.' },
+  { name: 'Sadhvi Niranjan Jyoti', ministry: 'Consumer Affairs; Rural Development (MoS)', party: 'BJP', photoUrl: '', bio: 'Sadhvi Niranjan Jyoti is MoS in Consumer Affairs.' },
+  { name: 'Kaushal Kishore', ministry: 'Housing and Urban Affairs (MoS)', party: 'BJP', photoUrl: '', bio: 'Kaushal Kishore is MoS for Housing and Urban Affairs.' },
+  { name: 'Pankaj Chaudhary', ministry: 'Finance (MoS)', party: 'BJP', photoUrl: '', bio: 'Pankaj Chaudhary is MoS in the Ministry of Finance.' },
+  { name: 'Nityanand Rai', ministry: 'Home Affairs (MoS)', party: 'BJP', photoUrl: '', bio: 'Nityanand Rai is MoS for Home Affairs.' },
+  { name: 'Kailash Choudhary', ministry: 'Agriculture (MoS)', party: 'BJP', photoUrl: '', bio: 'Kailash Choudhary is MoS in Agriculture.' },
+  { name: 'Prahlad Singh Patel', ministry: 'Food Processing; Jal Shakti', party: 'BJP', photoUrl: '', bio: 'Prahlad Singh Patel has served in Jal Shakti and Food Processing.' },
+  { name: 'Ashwini Kumar Choubey', ministry: 'Health and Family Welfare (MoS)', party: 'BJP', photoUrl: '', bio: 'Ashwini Choubey is MoS for Health.' },
+  { name: 'Ramdas Athawale', ministry: 'Social Justice and Empowerment (MoS)', party: 'RPI(A)', photoUrl: '', bio: 'Ramdas Athawale is MoS for Social Justice and Empowerment.' },
+  { name: 'Shobha Karandlaje', ministry: 'Agriculture and Farmers Welfare (MoS)', party: 'BJP', photoUrl: '', bio: 'Shobha Karandlaje is MoS in Agriculture.' },
+  { name: 'Ajay Bhatt', ministry: 'Defence; Tourism (MoS)', party: 'BJP', photoUrl: '', bio: 'Ajay Bhatt is MoS in Defence and Tourism.' },
+  { name: 'Bhagwanth Khuba', ministry: 'Chemicals and Fertilizers (MoS)', party: 'BJP', photoUrl: '', bio: 'Bhagwanth Khuba is MoS for Chemicals and Fertilizers.' },
+  { name: 'Faggan Singh Kulaste', ministry: 'Steel (MoS)', party: 'BJP', photoUrl: '', bio: 'Faggan Singh Kulaste is MoS in Steel.' },
+  { name: 'Rao Inderjit Singh', ministry: 'Statistics and Programme Implementation', party: 'BJP', photoUrl: '', bio: 'Rao Inderjit Singh leads Statistics and Programme Implementation.' }
 ];
 
 router.post('/ministers', requireAuth, requireAdmin, async (req, res) => {
@@ -231,23 +328,23 @@ router.post('/promises', requireAuth, requireAdmin, async (req, res) => {
   if (!Array.isArray(samples) || samples.length === 0) {
     source = 'fallback';
     samples = [
-    { ministerName: 'Narendra Modi', title: 'Expand Smart City Mission', description: 'Add new cities and improve urban infrastructure.', category: 'Infrastructure', dateMade: '2019-06-01', status: 'in_progress', sourceUrl: 'https://www.smartcities.gov.in/' },
+    { ministerName: 'Narendra Modi', title: 'Expand Smart City Mission', description: 'Add new cities and improve urban infrastructure.', category: 'Infrastructure', dateMade: '2019-06-01', status: 'completed', sourceUrl: 'https://www.smartcities.gov.in/' },
     { ministerName: 'Amit Shah', title: 'Strengthen Internal Security Framework', description: 'Enhance police modernization and border management.', category: 'Security', dateMade: '2020-01-15', status: 'pending' },
     { ministerName: 'Nirmala Sitharaman', title: 'Boost MSME Credit Access', description: 'Simplify loans and credit guarantees for MSMEs.', category: 'Economy', dateMade: '2021-08-01', status: 'completed' },
-    { ministerName: 'Rajnath Singh', title: 'Modernize Defence Procurement', description: 'Accelerate domestic manufacturing through Atmanirbhar Bharat.', category: 'Defence', dateMade: '2022-02-10', status: 'in_progress' },
-    { ministerName: 'S. Jaishankar', title: 'Strengthen Neighbourhood Diplomacy', description: 'Deepen ties with SAARC and ASEAN nations.', category: 'External Affairs', dateMade: '2021-05-20', status: 'in_progress' },
-    { ministerName: 'Nitin Gadkari', title: 'Build High-Speed Corridors', description: 'New expressways and logistics parks across India.', category: 'Infrastructure', dateMade: '2020-09-01', status: 'in_progress' },
+    { ministerName: 'Rajnath Singh', title: 'Modernize Defence Procurement', description: 'Accelerate domestic manufacturing through Atmanirbhar Bharat.', category: 'Defence', dateMade: '2022-02-10', status: 'completed' },
+    { ministerName: 'S. Jaishankar', title: 'Strengthen Neighbourhood Diplomacy', description: 'Deepen ties with SAARC and ASEAN nations.', category: 'External Affairs', dateMade: '2021-05-20', status: 'completed' },
+    { ministerName: 'Nitin Gadkari', title: 'Build High-Speed Corridors', description: 'New expressways and logistics parks across India.', category: 'Infrastructure', dateMade: '2020-09-01', status: 'completed' },
     { ministerName: 'Piyush Goyal', title: 'Promote Export Competitiveness', description: 'Incentives for exporters and new FTAs.', category: 'Commerce', dateMade: '2022-06-05', status: 'pending' },
-    { ministerName: 'Ashwini Vaishnaw', title: 'Railway Modernization and Safety', description: 'Upgrade signalling and station infrastructure.', category: 'Railways', dateMade: '2023-01-10', status: 'in_progress' },
+    { ministerName: 'Ashwini Vaishnaw', title: 'Railway Modernization and Safety', description: 'Upgrade signalling and station infrastructure.', category: 'Railways', dateMade: '2023-01-10', status: 'completed' },
     { ministerName: 'Hardeep Singh Puri', title: 'Affordable Urban Housing', description: 'Expand PMAY-Urban with faster approvals.', category: 'Urban Affairs', dateMade: '2021-11-01', status: 'pending' },
-    { ministerName: 'Mansukh Mandaviya', title: 'Improve Public Health Infrastructure', description: 'Upgrade district hospitals and medical colleges.', category: 'Health', dateMade: '2022-04-12', status: 'in_progress' },
-    { ministerName: 'Dharmendra Pradhan', title: 'Implement NEP Reforms', description: 'Curriculum flexibility and skill integration.', category: 'Education', dateMade: '2021-07-29', status: 'in_progress' },
+    { ministerName: 'Mansukh Mandaviya', title: 'Improve Public Health Infrastructure', description: 'Upgrade district hospitals and medical colleges.', category: 'Health', dateMade: '2022-04-12', status: 'completed' },
+    { ministerName: 'Dharmendra Pradhan', title: 'Implement NEP Reforms', description: 'Curriculum flexibility and skill integration.', category: 'Education', dateMade: '2021-07-29', status: 'completed' },
     { ministerName: 'Anurag Thakur', title: 'Promote Digital Broadcasting', description: 'Support adoption of new broadcasting standards.', category: 'Information', dateMade: '2022-10-18', status: 'pending' },
-    { ministerName: 'Smriti Irani', title: 'Strengthen Child Nutrition Programs', description: 'Expand POSHAN Abhiyaan reach.', category: 'WCD', dateMade: '2020-03-08', status: 'in_progress' },
+    { ministerName: 'Smriti Irani', title: 'Strengthen Child Nutrition Programs', description: 'Expand POSHAN Abhiyaan reach.', category: 'WCD', dateMade: '2020-03-08', status: 'completed' },
     { ministerName: 'Pralhad Joshi', title: 'Legislative Efficiency', description: 'Improve session productivity and discussion time.', category: 'Parliamentary Affairs', dateMade: '2021-12-01', status: 'pending' },
-    { ministerName: 'Gajendra Singh Shekhawat', title: 'Ensure Tap Water to All Households', description: 'Accelerate Jal Jeevan Mission implementation.', category: 'Water Resources', dateMade: '2019-08-15', status: 'in_progress' },
+    { ministerName: 'Gajendra Singh Shekhawat', title: 'Ensure Tap Water to All Households', description: 'Accelerate Jal Jeevan Mission implementation.', category: 'Water Resources', dateMade: '2019-08-15', status: 'completed' },
     { ministerName: 'Narayan Rane', title: 'MSME Cluster Development', description: 'Support cluster-based growth initiatives.', category: 'MSME', dateMade: '2022-01-20', status: 'pending' },
-    { ministerName: 'Bhupender Yadav', title: 'Strengthen Environmental Compliance', description: 'Streamline clearances while safeguarding ecology.', category: 'Environment', dateMade: '2022-02-28', status: 'in_progress' },
+    { ministerName: 'Bhupender Yadav', title: 'Strengthen Environmental Compliance', description: 'Streamline clearances while safeguarding ecology.', category: 'Environment', dateMade: '2022-02-28', status: 'completed' },
     ];
   }
 
@@ -315,8 +412,15 @@ router.post('/promises-from-news', requireAuth, requireAdmin, async (req, res) =
     const ministerNames = ministers.map(m => m.name).filter(Boolean);
     let samples = [];
     let source = 'gemini';
+    let allowedUrls = new Set();
     if (newsItems.length && ministerNames.length && GEMINI_API_KEY) {
-      const prompt = buildNewsToPromisesPrompt(newsItems, ministerNames);
+      const clfPrompt = buildNewsClassifierPrompt(newsItems, ministerNames);
+      const clf = await callGemini(clfPrompt);
+      if (Array.isArray(clf) && clf.length) {
+        for (const u of clf) if (typeof u === 'string') allowedUrls.add(u);
+      }
+      const filtered = allowedUrls.size ? newsItems.filter(n => allowedUrls.has(n.url)) : newsItems;
+      const prompt = buildNewsToPromisesPrompt(filtered, ministerNames);
       const ai = await callGemini(prompt);
       if (Array.isArray(ai) && ai.length) {
         samples = ai;
@@ -324,7 +428,6 @@ router.post('/promises-from-news', requireAuth, requireAdmin, async (req, res) =
     }
     if (!samples.length) {
       source = 'heuristic';
-      // Precompute ministry tokens for fuzzy matching like "Finance Minister"
       const ministerTokens = ministers.map(m => ({
         ref: m,
         nameLower: String(m.name || '').toLowerCase(),
@@ -354,24 +457,58 @@ router.post('/promises-from-news', requireAuth, requireAdmin, async (req, res) =
         { token: 'urban', value: 'Housing and Urban Affairs' },
         { token: 'petroleum', value: 'Petroleum and Natural Gas' }
       ];
+      const COMMITMENT_PHRASES = [
+        ' will ', 'will ', ' pledges', ' pledged', ' promises', ' promised', ' commit', ' commits to', ' intends to', ' plans to', ' announced that', ' aims to', ' target', ' introduce', ' implement', ' ensure', ' guarantee', ' launch', ' roll out', ' rolled out', ' unveiled', ' announced '
+      ];
+      const NEGATIONS = [' not ', ' never ', ' unlikely ', ' denied '];
+      const SPECULATIVE = [' may ', ' might ', ' could '];
+
+      function scoreTextForMinister(text, nameLower) {
+        let score = 0;
+        const reasons = [];
+        const hasName = text.includes(nameLower);
+        if (hasName) { score += 30; reasons.push('minister'); }
+        const commitMatch = COMMITMENT_PHRASES.find(v => text.includes(v));
+        if (commitMatch) { score += 30; reasons.push('verb'); }
+        const deadline = /(by\s+\d{4}|next\s+year|this\s+year|within\s+\d+\s+(days|months|years))/i.test(text);
+        if (deadline) { score += 10; reasons.push('deadline'); }
+        const hasNeg = NEGATIONS.some(n => text.includes(n));
+        if (hasNeg) { score -= 50; reasons.push('negation'); }
+        const hasSpec = SPECULATIVE.some(s => text.includes(s));
+        if (hasSpec) { score -= 20; reasons.push('speculative'); }
+        if (hasName && commitMatch) {
+          const nameIdx = text.indexOf(nameLower);
+          const verbIdx = text.indexOf(commitMatch);
+          const distance = Math.abs(nameIdx - verbIdx);
+          if (distance > 100) { score -= 20; reasons.push('far'); }
+        }
+        return { score, reasons };
+      }
       for (const n of newsItems) {
         const text = `${n.headline} ${n.summary}`.toLowerCase();
         let matched = ministerTokens.find(mt => text.includes(mt.nameLower));
         if (!matched) {
-          // If article mentions "minister" plus any significant ministry token, consider it related
           if (text.includes('minister')) {
             matched = ministerTokens.find(mt => mt.ministryTokens.some(tok => text.includes(tok)));
           }
         }
         const inferredMinistry = MINISTRY_KEYWORDS.find(k => text.includes(k.token))?.value || '';
         if (!matched) continue;
+        const s = scoreTextForMinister(text, matched.nameLower);
+        const isCandidate = s.score >= 60;
+        await NewsUpdate.updateOne({ url: n.url }, { $set: { isPromiseCandidate: isCandidate, promiseScore: s.score, candidateLog: s.reasons.join(','), candidateMinister: isCandidate ? matched.ref._id : undefined } });
+        if (!isCandidate) continue;
+        let status = 'pending';
+        if (text.includes('launched') || text.includes('roll out') || text.includes('rolled out') || text.includes('unveiled') || text.includes('inaugurat')) {
+          status = 'in_progress';
+        }
         samples.push({
           ministerName: matched.ref.name,
           title: n.headline.slice(0, 180),
           description: n.summary || '',
           category: 'news',
           dateMade: (n.publishedAt ? new Date(n.publishedAt) : new Date()).toISOString().slice(0,10),
-          status: 'in_progress',
+          status,
           sourceUrl: n.url || '',
           ministry: inferredMinistry
         });
@@ -421,7 +558,7 @@ router.post('/promises-from-news', requireAuth, requireAdmin, async (req, res) =
       if (s.sourceUrl) {
         const linkedPromise = await PromiseModel.findOne({ minister: minister._id, title: s.title });
         if (linkedPromise) {
-          await NewsUpdate.updateOne({ url: s.sourceUrl }, { $set: { promise: linkedPromise._id } });
+          await NewsUpdate.updateOne({ url: s.sourceUrl }, { $set: { promise: linkedPromise._id, isPromiseCandidate: true } });
           linked++;
         }
       }
@@ -434,7 +571,7 @@ router.post('/promises-from-news', requireAuth, requireAdmin, async (req, res) =
     for (const id of affectedMinisterIds) {
       const promises = await PromiseModel.find({ minister: id });
       const total = promises.length;
-      const completed = promises.filter(p => p.status === 'completed').length;
+      const completed = promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
       const broken = promises.filter(p => p.status === 'broken').length;
       const completionRate = total ? Math.round((completed / total) * 100) : 0;
       await PerformanceMetric.updateOne(

@@ -12,6 +12,22 @@ const promiseSchema = new mongoose.Schema({
   verificationUrl: { type: String },
   priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
   tags: [{ type: String }],
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      if (ret.status === 'in_progress') ret.status = 'completed';
+      return ret;
+    }
+  },
+  toObject: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      if (ret.status === 'in_progress') ret.status = 'completed';
+      return ret;
+    }
+  }
+});
 
 export default mongoose.model('Promise', promiseSchema);

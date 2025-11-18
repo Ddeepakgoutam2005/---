@@ -16,8 +16,26 @@ function isRelevantIndianPolitical(article) {
 }
 
 router.get('/', async (req, res) => {
-  const items = await NewsUpdate.find({}).sort({ createdAt: -1 }).limit(50);
-  res.json(items);
+  try {
+    const { candidate = null, minister = null, limit = 50 } = req.query || {};
+    const filter = {};
+    if (candidate === 'true') filter.isPromiseCandidate = true;
+    if (minister && typeof minister === 'string') {
+      try {
+        if (mongoose.Types.ObjectId.isValid(minister)) {
+          filter.$or = [
+            { candidateMinister: new mongoose.Types.ObjectId(minister) },
+          ];
+          const promises = await PromiseModel.find({ minister: minister }).select('_id');
+          if (promises.length) filter.$or.push({ promise: { $in: promises.map(p => p._id) } });
+        }
+      } catch (_) {}
+    }
+    const items = await NewsUpdate.find(filter).sort({ publishedAt: -1 }).limit(Number(limit));
+    res.json(items);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch news' });
+  }
 });
 
 router.post('/fetch', async (req, res) => {
@@ -72,5 +90,6 @@ router.post('/fetch-and-save', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch & save RSS' });
   }
 });
+
 
 export default router;

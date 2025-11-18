@@ -44,13 +44,12 @@ export default function Ministers() {
           {filtered.map((m) => (
             <Link key={m._id} to={`/ministers/${m._id}`}>
               <GlassCard className="p-4 flex items-center gap-4">
-                {m.photoUrl ? (
-                  <img src={m.photoUrl} alt={m.name} className="w-16 h-16 rounded-full object-cover" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center text-slate-200 font-semibold">
-                    {(m.name || '?').charAt(0)}
-                  </div>
-                )}
+                <img
+                  src={m.photoUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="36" fill="#111827">Minister</text></svg>'}
+                  alt={m.name}
+                  className="w-16 h-16 rounded-full object-cover"
+                  onError={(e) => { e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="36" fill="#111827">Minister</text></svg>'; }}
+                />
                 <div>
                   <div className="font-semibold text-black dark:text-slate-100">{m.name}</div>
                   <div className="text-sm text-slate-900 dark:text-slate-300">{m.ministry}{m.party ? ` (${m.party})` : ''}</div>

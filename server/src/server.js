@@ -10,6 +10,7 @@ import newsRoutes from './routes/news.js';
 import performanceRoutes from './routes/performance.js';
 import adminRoutes from './routes/admin.js';
 import importRoutes from './routes/import.js';
+import queryRoutes from './routes/queries.js';
 import Minister from './models/Minister.js';
 import PromiseModel from './models/Promise.js';
 
@@ -31,6 +32,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/performance', performanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/queries', queryRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -46,7 +48,7 @@ async function seedIfEmpty() {
   ]);
   const [modi, shah, nirmala] = ministers;
   await PromiseModel.insertMany([
-    { minister: modi._id, title: 'Develop smart cities', dateMade: new Date('2019-06-01'), status: 'in_progress', sourceUrl: 'https://example.com' },
+    { minister: modi._id, title: 'Develop smart cities', dateMade: new Date('2019-06-01'), status: 'completed', sourceUrl: 'https://example.com' },
     { minister: shah._id, title: 'Strengthen internal security', dateMade: new Date('2020-01-15'), status: 'pending' },
     { minister: nirmala._id, title: 'Boost MSME sector', dateMade: new Date('2021-08-01'), status: 'completed' },
   ]);

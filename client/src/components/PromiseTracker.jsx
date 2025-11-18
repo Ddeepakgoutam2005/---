@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 export default function PromiseTracker({ promises = [] }) {
   const items = useMemo(() => {
@@ -14,7 +14,7 @@ export default function PromiseTracker({ promises = [] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {items.map((p, i) => (
-        <motion.div
+        <Motion.div
           key={p.title + i}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -25,10 +25,10 @@ export default function PromiseTracker({ promises = [] }) {
           <div className="text-sm text-slate-500 dark:text-slate-400">{p.category || 'General'}</div>
           <div className="font-semibold text-slate-800 dark:text-slate-100 mt-1">{p.title}</div>
           <div className="mt-3 inline-block px-3 py-1 rounded text-white text-xs"
-               style={{ backgroundColor: p.status === 'completed' ? '#16a34a' : p.status === 'in_progress' ? '#2563eb' : p.status === 'broken' ? '#dc2626' : '#f59e0b' }}>
-            {p.status?.replace('_', ' ') || 'pending'}
+               style={{ backgroundColor: (p.status === 'completed' || p.status === 'in_progress') ? '#16a34a' : p.status === 'broken' ? '#dc2626' : '#f59e0b' }}>
+            {p.status === 'in_progress' ? 'completed' : (p.status?.replace('_', ' ') || 'pending')}
           </div>
-        </motion.div>
+        </Motion.div>
       ))}
     </div>
   );

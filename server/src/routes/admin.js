@@ -5,6 +5,9 @@ import NewsUpdate from '../models/NewsUpdate.js';
 import PromiseModel from '../models/Promise.js';
 import Minister from '../models/Minister.js';
 import PerformanceMetric from '../models/PerformanceMetric.js';
+import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 const rss = new RSSParser();
@@ -75,18 +78,38 @@ async function fetchAndSaveFeed(feedUrl) {
     publishedAt: i.pubDate ? new Date(i.pubDate) : undefined,
   }));
   const articles = rawArticles.filter(isRelevantIndianPolitical);
+  const ministers = await Minister.find({});
+  const ministerTokens = ministers.map(m => ({ ref: m, nameLower: String(m.name || '').toLowerCase() }));
+  const verbs = [' will ', 'will ', ' pledges', ' pledged', ' promises', ' promised', ' commits to', ' plans to', ' intends to', ' announced that', ' aims to'];
+  const negs = [' not ', ' never ', ' unlikely ', ' denied '];
+  const specs = [' may ', ' might ', ' could '];
   let saved = 0;
   for (const a of articles) {
     try {
+      const text = `${a.headline} ${a.summary}`.toLowerCase();
+      let matched = ministerTokens.find(mt => text.includes(mt.nameLower));
+      let score = 0;
+      const hasName = !!matched;
+      if (hasName) score += 30;
+      const verb = verbs.find(v => text.includes(v));
+      if (verb) score += 30;
+      const deadline = /(by\s+\d{4}|next\s+year|this\s+year|within\s+\d+\s+(days|months|years))/i.test(text);
+      if (deadline) score += 10;
+      if (negs.some(n => text.includes(n))) score -= 50;
+      if (specs.some(s => text.includes(s))) score -= 20;
+      if (hasName && verb) {
+        const nameIdx = text.indexOf(matched.nameLower);
+        const verbIdx = text.indexOf(verb);
+        if (Math.abs(nameIdx - verbIdx) > 100) score -= 20;
+      }
+      const isCandidate = score >= 60;
       await NewsUpdate.updateOne(
         { url: a.url },
-        { $setOnInsert: a },
+        { $setOnInsert: a, $set: { isPromiseCandidate: isCandidate, promiseScore: score, candidateMinister: (isCandidate && matched) ? matched.ref._id : undefined } },
         { upsert: true }
       );
       saved++;
-    } catch (err) {
-      // ignore duplicates for idempotency
-    }
+    } catch (err) {}
   }
   return saved;
 }
@@ -99,7 +122,7 @@ async function recomputeMonthlyMetrics() {
   for (const m of ministers) {
     const promises = await PromiseModel.find({ minister: m._id });
     const total = promises.length;
-    const completed = promises.filter(p => p.status === 'completed').length;
+    const completed = promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
     const broken = promises.filter(p => p.status === 'broken').length;
     const completionRate = total ? Math.round((completed / total) * 100) : 0;
     await PerformanceMetric.updateOne(
@@ -121,6 +144,143 @@ async function recomputeMonthlyMetrics() {
   return updated;
 }
 
+function buildPromiseValidationPrompt(items, ministerNames) {
+  const context = JSON.stringify(items.map(it => ({ id: it.id, ministerName: it.ministerName, title: it.title, description: it.description || '', newsSummary: it.newsSummary || '', sourceUrl: it.sourceUrl || '' })));
+  const namesList = ministerNames.join(', ');
+  return `You validate whether each record is a genuine political promise.
+Use EXACT minister names from this list when assessing attribution: ${namesList}.
+Define "promise" strictly as an explicit, future-oriented commitment made by the named minister (e.g., "will", "pledge", "commit to", "plan to", "announce to implement").
+Ignore general news, opinions, criticism, allegations, or completed retrospectives without an explicit prior commitment.
+Return STRICTLY a JSON array where each item is:
+{ "id": string, "is_promise": boolean, "confidence": number, "reason": string }
+Only JSON. No prose.
+Items JSON:\n${context}`;
+}
+
+const COMMITMENT_PHRASES = [
+  'will ', 'pledge', 'promises', 'promise ', 'commit ', 'committed', 'commitment',
+  'plan to', 'plans to', 'announce ', 'announced', 'launch ', 'implement ', 'scheme', 'policy',
+  'roll out', 'introduce', 'provide ', 'create ', 'build '
+];
+
+function looksLikePromiseHeuristic(p) {
+  const text = `${p.title} ${p.description || ''}`.toLowerCase();
+  const hasPhrase = COMMITMENT_PHRASES.some(ph => text.includes(ph));
+  const hasSource = !!p.sourceUrl;
+  // Strong signal: commitment phrase present
+  if (hasPhrase) return true;
+  // If no phrase, but has a source and linked news mentions scheme/policy keywords, keep
+  const softKeywords = ['scheme', 'policy', 'will ', 'plan to'];
+  const soft = softKeywords.some(ph => text.includes(ph));
+  return hasSource && soft;
+}
+
+// Admin-only: analyze all promises and remove entries that are not genuine promises
+router.post('/cleanup-promises', requireAuth, requireAdmin, async (req, res) => {
+  const { dryRun = true, limit = null, useAI = true, minConfidence = 0.5, minister } = req.body || {};
+  try {
+    // Optional minister filter: accept ObjectId or name (case-insensitive)
+    let ministerDoc = null;
+    if (minister) {
+      try {
+        if (mongoose.Types.ObjectId.isValid(minister)) {
+          ministerDoc = await Minister.findById(minister);
+        } else {
+          ministerDoc = await Minister.findOne({ name: new RegExp(String(minister), 'i') });
+        }
+      } catch (_) {
+        // ignore lookup errors; will treat as not found
+      }
+    }
+    let q = PromiseModel.find(ministerDoc ? { minister: ministerDoc._id } : {}).populate('minister');
+    if (limit && Number(limit) > 0) q = q.limit(Number(limit));
+    const promises = await q;
+    const total = promises.length;
+    if (!total) return res.json({ ok: true, totalPromises: 0, invalidCount: 0, deletedCount: 0, dryRun: !!dryRun, useAI: false, metricsUpdated: 0, note: minister ? 'Minister filter matched none or no promises' : undefined });
+
+    // Map related news summaries by sourceUrl
+    const urlSet = new Set(promises.map(p => p.sourceUrl).filter(Boolean));
+    const news = urlSet.size ? await NewsUpdate.find({ url: { $in: Array.from(urlSet) } }) : [];
+    const newsMap = new Map(news.map(n => [n.url, n.summary || '']));
+
+    const items = promises.map(p => ({
+      id: String(p._id),
+      ministerName: p.minister?.name || '',
+      title: p.title,
+      description: p.description || '',
+      sourceUrl: p.sourceUrl || '',
+      newsSummary: p.sourceUrl ? (newsMap.get(p.sourceUrl) || '') : ''
+    }));
+    const ministerNames = ministerDoc ? [ministerDoc.name] : Array.from(new Set(promises.map(p => p.minister?.name).filter(Boolean)));
+
+    const invalidIds = new Set();
+
+    const canUseAI = useAI && !!GEMINI_API_KEY;
+    if (canUseAI) {
+      // Chunk the items to keep prompt size reasonable
+      const chunkSize = 30;
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const prompt = buildPromiseValidationPrompt(chunk, ministerNames);
+        const ai = await callGemini(prompt);
+        if (Array.isArray(ai)) {
+          for (const r of ai) {
+            if (!r || typeof r.id !== 'string') continue;
+            const isPromise = !!r.is_promise;
+            const conf = typeof r.confidence === 'number' ? r.confidence : 0;
+            if (!isPromise || conf < minConfidence) invalidIds.add(r.id);
+          }
+        } else {
+          // Fallback to heuristics for this chunk if AI fails
+          for (const it of chunk) {
+            if (!looksLikePromiseHeuristic(it)) invalidIds.add(it.id);
+          }
+        }
+      }
+    } else {
+      // Heuristic-only mode
+      for (const it of items) {
+        if (!looksLikePromiseHeuristic(it)) invalidIds.add(it.id);
+      }
+    }
+
+    const invalidCount = invalidIds.size;
+    let deletedCount = 0;
+    let metricsUpdated = 0;
+    const invalidIdList = Array.from(invalidIds);
+    if (!dryRun && invalidCount > 0) {
+      // Unlink related news items first
+      await NewsUpdate.updateMany({ promise: { $in: invalidIdList } }, { $unset: { promise: 1 } });
+      // Delete invalid promises
+      await PromiseModel.deleteMany({ _id: { $in: invalidIdList } });
+      deletedCount = invalidCount;
+      // Recompute metrics: targeted if minister filter provided, otherwise global
+      if (ministerDoc) {
+        const now = new Date();
+        const monthKey = new Date(now.getFullYear(), now.getMonth(), 1);
+        const remaining = await PromiseModel.find({ minister: ministerDoc._id });
+        const totalRem = remaining.length;
+        const completedRem = remaining.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
+        const brokenRem = remaining.filter(p => p.status === 'broken').length;
+        const completionRateRem = totalRem ? Math.round((completedRem / totalRem) * 100) : 0;
+        await PerformanceMetric.updateOne(
+          { minister: ministerDoc._id, monthYear: monthKey },
+          { $set: { totalPromises: totalRem, completedPromises: completedRem, brokenPromises: brokenRem, completionRate: completionRateRem, score: completionRateRem } },
+          { upsert: true }
+        );
+        metricsUpdated = 1;
+      } else {
+        metricsUpdated = await recomputeMonthlyMetrics();
+      }
+    }
+
+    return res.json({ ok: true, totalPromises: total, invalidCount, deletedCount, dryRun: !!dryRun, useAI: !!canUseAI, metricsUpdated, sampleInvalidIds: invalidIdList.slice(0, 50), filterMinister: ministerDoc ? ministerDoc.name : undefined });
+  } catch (e) {
+    console.error('cleanup-promises error:', e);
+    return res.status(500).json({ error: 'Failed to cleanup promises' });
+  }
+});
+ 
 // Admin-only refresh endpoint
 router.post('/refresh', requireAuth, requireAdmin, async (req, res) => {
   const { feeds, saveNews = true, recomputeMetrics = true, geminiSummarize = false } = req.body || {};
@@ -175,6 +335,30 @@ router.post('/refresh', requireAuth, requireAdmin, async (req, res) => {
         console.warn('Gemini summarization skipped due to error:', e?.message || e);
       }
     }
+    // Heuristic fallback: mark promise-related based on patterns but do not link unless later AI confirms
+    try {
+      const recent = await NewsUpdate.find({}).sort({ publishedAt: -1 }).limit(100);
+      const patterns = [
+        /\bpromis(?:e|ed)\b/i,
+        /\bcommit(?:ment|ted)\b/i,
+        /\bannounce(?:d|ment)\b/i,
+        /\bwill\s+(launch|implement|build|provide|create)\b/i,
+        /\bscheme\b/i,
+        /\bpolicy\b/i
+      ];
+      const ministerIndicators = [/minister/i, /prime\s+minister/i];
+      for (const n of recent) {
+        const text = `${n.headline} ${n.summary || ''}`;
+        const hasPhrase = patterns.some((r) => r.test(text));
+        const hasMinisterWord = ministerIndicators.some((r) => r.test(text));
+        const conf = hasPhrase && hasMinisterWord ? 0.5 : hasPhrase ? 0.35 : 0;
+        if (conf >= 0.35 && !n.promise) {
+          await NewsUpdate.updateOne({ _id: n._id }, { $set: { isPromiseRelated: true, promiseConfidence: conf, classificationEvidence: 'heuristic: phrase+minister keyword' } });
+        }
+      }
+    } catch (_) {
+      // ignore heuristic errors
+    }
     let metricsUpdated = 0;
     if (recomputeMetrics) {
       metricsUpdated = await recomputeMonthlyMetrics();
@@ -182,6 +366,64 @@ router.post('/refresh', requireAuth, requireAdmin, async (req, res) => {
     return res.json({ ok: true, feedsProcessed: feedList.length, articlesSaved: savedTotal, aiSummarized, metricsUpdated });
   } catch (e) {
     return res.status(500).json({ error: 'Refresh failed' });
+  }
+});
+
+router.post('/cleanup-news', requireAuth, requireAdmin, async (req, res) => {
+  const { dryRun = true, threshold = 60 } = req.body || {};
+  try {
+    const bad = await NewsUpdate.find({ promise: { $ne: null }, promiseScore: { $lt: Number(threshold) } }).sort({ publishedAt: -1 }).limit(500);
+    const items = bad.map(n => ({ id: String(n._id), headline: n.headline, source: n.source, url: n.url, score: n.promiseScore }));
+    if (dryRun) return res.json({ ok: true, count: items.length, items });
+    const ids = bad.map(n => n._id);
+    await NewsUpdate.updateMany({ _id: { $in: ids } }, { $unset: { promise: 1 }, $set: { isPromiseCandidate: false } });
+    return res.json({ ok: true, unlinked: ids.length });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to cleanup news' });
+  }
+});
+
+router.post('/fetch-minister-images', requireAuth, requireAdmin, async (req, res) => {
+  const PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="36" fill="#111827">Minister</text></svg>';
+  try {
+    const TARGET_NAMES = [
+      'Revanth Reddy','Ajay Bhatt','Amit Shah','Anupriya Patel','Anurag Thakur','Arjun Ram Meghwal','Arvind Kejriwal','Ashok Gehlot','Ashwini Kumar Choubey','Ashwini Vaishnaw','Bhagwant Mann','Bhagwanth Khuba','Bhupender Yadav','Bhupesh Baghel','Dharmendra Pradhan','Eknath Shinde','Faggan Singh Kulaste','G. Kishan Reddy','Gajendra Singh Shekhawat','Giriraj Singh','Hardeep Singh Puri','Himanta Biswa Sarma','Jitendra Singh','Jyotiraditya Scindia','K. Chandrashekar Rao','Kailash Choudhary','Kamal Nath','Kaushal Kishore','Kiran Rijiju','M. K. Stalin','Mahendra Nath Pandey','Mamata Banerjee','Mansukh Mandaviya','Mayawati','Meenakashi Lekhi','Narayan Rane','Narendra Modi','Naveen Patnaik','Nirmala Sitharaman','Nitin Gadkari','Nitish Kumar','Nityanand Rai','P. Chidambaram','Pankaj Chaudhary','Parshottam Rupala','Prahlad Singh Patel','Pralhad Joshi','Rajeev Chandrasekhar','Rajnath Singh','Ramdas Athawale','Rao Inderjit Singh','S. Jaishankar','Sadhvi Niranjan Jyoti','Sarbananda Sonowal','Shivraj Singh Chouhan','Shobha Karandlaje','Siddaramaiah','Smriti Irani','Uddhav Thackeray','V. K. Singh','Yogi Adityanath','Pinarayi Vijayan','Piyush Goyal'
+    ];
+    const out = [];
+    let updated = 0;
+    let placeholders = 0;
+    let skipped = 0;
+    for (const name of TARGET_NAMES) {
+      const q = await Minister.findOne({ name }) || await Minister.findOne({ name: new RegExp(`^${name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') });
+      if (!q) { skipped++; out.push({ name, photoUrl: '', status: 'skipped' }); continue; }
+      await new Promise(r => setTimeout(r, 300));
+      const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(name)}&gsrlimit=1&prop=pageimages&piprop=original&origin=*`;
+      let photo = '';
+      try {
+        const resp = await fetch(apiUrl);
+        const data = await resp.json();
+        const pages = data?.query?.pages || {};
+        const keys = Object.keys(pages);
+        if (keys.length) {
+          const first = pages[keys[0]];
+          if (first && first.original && first.original.source) photo = first.original.source;
+        }
+      } catch (_) {}
+      if (photo) {
+        await Minister.updateOne({ _id: q._id }, { $set: { photoUrl: photo } });
+        updated++;
+        out.push({ name, photoUrl: photo, status: 'updated' });
+      } else {
+        await Minister.updateOne({ _id: q._id }, { $set: { photoUrl: PLACEHOLDER } });
+        placeholders++;
+        out.push({ name, photoUrl: PLACEHOLDER, status: 'placeholder' });
+      }
+    }
+    const outPath = path.resolve(process.cwd(), 'server', 'scripts', 'minister_images.json');
+    try { fs.writeFileSync(outPath, JSON.stringify(out, null, 2)); } catch (_) {}
+    return res.json({ ok: true, processed: TARGET_NAMES.length, updated, placeholders, skipped, outPath });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to fetch minister images' });
   }
 });
 

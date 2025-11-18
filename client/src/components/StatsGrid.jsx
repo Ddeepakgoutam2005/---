@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 export default function StatsGrid({ ministers = [], promises = [] }) {
   const stats = useMemo(() => {
     const total = promises.length;
-    const completed = promises.filter(p => p.status === 'completed').length;
-    const inProgress = promises.filter(p => p.status === 'in_progress').length;
-    const broken = promises.filter(p => p.status === 'broken').length;
+    const completed = promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
     const rate = total ? Math.round((completed / total) * 100) : 0;
     return [
       { label: 'Ministers', value: ministers.length, icon: 'fas fa-users', color: 'text-blue-600' },
@@ -19,7 +17,7 @@ export default function StatsGrid({ ministers = [], promises = [] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((s, i) => (
-        <motion.div
+        <Motion.div
           key={s.label}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -33,7 +31,7 @@ export default function StatsGrid({ ministers = [], promises = [] }) {
             </div>
             <i className={`${s.icon} ${s.color} text-2xl`}></i>
           </div>
-        </motion.div>
+        </Motion.div>
       ))}
     </div>
   );

@@ -56,13 +56,10 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-600 dark:text-slate-300">Pending</div>
                 <div className="text-2xl font-bold text-orange-600">{promises.filter(p => p.status === 'pending').length}</div>
               </div>
-              <div className="rounded-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur p-4">
-                <div className="text-sm text-gray-600 dark:text-slate-300">In Progress</div>
-                <div className="text-2xl font-bold text-blue-600">{promises.filter(p => p.status === 'in_progress').length}</div>
-              </div>
+              
               <div className="rounded-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur p-4">
                 <div className="text-sm text-gray-600 dark:text-slate-300">Completed</div>
-                <div className="text-2xl font-bold text-green-600">{promises.filter(p => p.status === 'completed').length}</div>
+                <div className="text-2xl font-bold text-green-600">{promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length}</div>
               </div>
               <div className="rounded-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur p-4">
                 <div className="text-sm text-gray-600 dark:text-slate-300">Broken</div>

@@ -10,7 +10,7 @@ router.get('/summary', async (req, res) => {
   for (const m of ministers) {
     const promises = await PromiseModel.find({ minister: m._id });
     const total = promises.length;
-    const completed = promises.filter(p => p.status === 'completed').length;
+    const completed = promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
     const broken = promises.filter(p => p.status === 'broken').length;
     const completionRate = total ? Math.round((completed / total) * 100) : 0;
     results.push({ minister: m.name, ministry: m.ministry, totalPromises: total, completed, broken, completionRate });
@@ -30,7 +30,7 @@ router.get('/trends', async (req, res) => {
   for (let i = 0; i < Number(months); i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    bucket.set(key, { month: key, pending: 0, in_progress: 0, completed: 0, broken: 0, total: 0 });
+    bucket.set(key, { month: key, pending: 0, completed: 0, broken: 0, total: 0 });
   }
   for (const p of promises) {
     const d = p.dateMade || p.createdAt || new Date();
@@ -38,7 +38,9 @@ router.get('/trends', async (req, res) => {
     if (bucket.has(key)) {
       const b = bucket.get(key);
       b.total += 1;
-      if (p.status && b[p.status] !== undefined) b[p.status] += 1;
+      // Merge 'in_progress' into 'completed'
+      const status = p.status === 'in_progress' ? 'completed' : p.status;
+      if (status && b[status] !== undefined) b[status] += 1;
       bucket.set(key, b);
     }
   }
