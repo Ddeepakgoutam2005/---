@@ -13,7 +13,7 @@ export default function MinisterDetail() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
   const [myReports, setMyReports] = useState({});
-  const [relatedNews, setRelatedNews] = useState([]);
+  const [criticismNews, setCriticismNews] = useState([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -54,11 +54,12 @@ export default function MinisterDetail() {
   useEffect(() => {
     async function loadNews() {
       try {
-        const res = await fetch(`${API_URL}/api/news?candidate=true&minister=${id}&limit=10`);
-        const data = await res.json();
-        if (Array.isArray(data)) setRelatedNews(data);
-      } catch {
-        // ignore
+        const res = await fetch(`${API_URL}/api/news/related?minister=${id}&limit=25`);
+        const items = await res.json();
+        const arr = Array.isArray(items) ? items : [];
+        setCriticismNews(arr);
+      } catch (e) {
+        console.warn('Failed to load promise-related news', e);
       }
     }
     loadNews();
@@ -127,7 +128,7 @@ export default function MinisterDetail() {
               <div key={p._id} className="rounded border border-slate-700 p-3 bg-slate-800/70">
                 <div className="font-semibold">{p.title}</div>
                 {p.description ? <div className="text-sm text-slate-300">{p.description}</div> : null}
-                <div className="text-sm">Status: {p.status === 'in_progress' ? 'completed' : p.status}</div>
+                <div className="text-sm">Status: {p.status}</div>
                 {p.sourceUrl ? <a className="text-blue-300 text-sm" href={p.sourceUrl} target="_blank" rel="noreferrer">Source</a> : null}
                 {p.verificationUrl ? <a className="text-blue-300 text-sm ml-2" href={p.verificationUrl} target="_blank" rel="noreferrer">Verification</a> : null}
                 {user && (
@@ -144,12 +145,12 @@ export default function MinisterDetail() {
         )}
       </section>
       <section>
-        <h3 className="text-xl font-semibold mb-4">Related News (Promise Candidates)</h3>
-        {relatedNews.length === 0 ? (
-          <p className="dark:text-slate-300">No related promise-making news</p>
+        <h3 className="text-xl font-semibold mb-4">Promise Related News</h3>
+        {criticismNews.length === 0 ? (
+          <p className="dark:text-slate-300">No promise-related news found</p>
         ) : (
           <div className="space-y-3">
-            {relatedNews.map(n => (
+            {criticismNews.map(n => (
               <div key={n._id} className="rounded border border-slate-700 p-3 bg-slate-800/70">
                 <div className="font-semibold">{n.headline}</div>
                 {n.summary ? <div className="text-sm text-slate-300">{n.summary}</div> : null}

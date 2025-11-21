@@ -25,11 +25,11 @@ export default function Admin() {
     }
   }
 
-  async function refreshAll() {
+  async function fetchNews() {
     try {
       setLoading(true);
-      const result = await apiPost('/api/admin/refresh', { saveNews: true, recomputeMetrics: true, geminiSummarize: true });
-      setStatus(`Refresh done: ${result.articlesSaved} articles, AI summaries ${result.aiSummarized || 0}, ${result.metricsUpdated} metrics.`);
+      const result = await apiPost('/api/admin/refresh', { saveNews: true, recomputeMetrics: false, geminiSummarize: false });
+      setStatus(`Fetched ${result.articlesSaved} articles from feeds.`);
     } catch (e) {
       setStatus(String(e.message || e));
     } finally {
@@ -37,26 +37,13 @@ export default function Admin() {
     }
   }
 
-  async function importMinisters() {
+  
+
+  async function runGeminiClassifier() {
     try {
       setLoading(true);
-      const result = await apiPost('/api/import/ministers', {});
-      setStatus(`Imported/updated ${result.upserted} ministers.`);
-    } catch (e) {
-      setStatus(String(e.message || e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Removed legacy Import Promises action per updated workflow
-
-  async function importPromisesFromNews() {
-    try {
-      setLoading(true);
-      const result = await apiPost('/api/import/promises-from-news', { limit: 60 });
-      setStatus(`News→Promises: upserted ${result.upserted}, linked ${result.linked}, metrics ${result.metricsUpdated} (source: ${result.source}).`);
-      window.dispatchEvent(new Event('promises:refresh'));
+      const result = await apiPost('/api/admin/refresh-gemini', { limitPerFeed: 6 });
+      setStatus(`Gemini processed ${result.processedCount || 0} items.`);
     } catch (e) {
       setStatus(String(e.message || e));
     } finally {
@@ -75,31 +62,6 @@ export default function Admin() {
     }
   }
 
-  async function cleanupNewsDryRun() {
-    try {
-      setLoading(true);
-      const result = await apiPost('/api/admin/cleanup-news', { dryRun: true, threshold: 60 });
-      setStatus(`Found ${result.count} non-genuine linked news. Review and confirm cleanup.`);
-      window.__cleanupNewsItems = result.items || [];
-    } catch (e) {
-      setStatus(String(e.message || e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function cleanupNewsConfirm() {
-    try {
-      setLoading(true);
-      const result = await apiPost('/api/admin/cleanup-news', { dryRun: false, threshold: 60 });
-      setStatus(`Unlinked ${result.unlinked} non-genuine news from promises.`);
-    } catch (e) {
-      setStatus(String(e.message || e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-black dark:text-slate-100">Admin Controls</h2>
@@ -110,12 +72,9 @@ export default function Admin() {
           <button onClick={loginAdmin} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Login'}</button>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={refreshAll} disabled={loading} className="bg-saffron text-white px-4 py-2 rounded">{loading ? '...' : 'Refresh Data (News + Metrics)'}</button>
-          <button onClick={importMinisters} disabled={loading} className="bg-green-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Import Ministers'}</button>
-          <button onClick={importPromisesFromNews} disabled={loading} className="bg-purple-700 text-white px-4 py-2 rounded">{loading ? '...' : 'Import Promises from News'}</button>
+          <button onClick={fetchNews} disabled={loading} className="bg-saffron text-white px-4 py-2 rounded">{loading ? '...' : 'Fetch News from Feeds'}</button>
           <button onClick={fetchMinisterImages} disabled={loading} className="bg-teal-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Fetch Minister Images'}</button>
-          <button onClick={cleanupNewsDryRun} disabled={loading} className="bg-orange-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Cleanup Non-Genuine News (Dry Run)'}</button>
-          <button onClick={cleanupNewsConfirm} disabled={loading} className="bg-red-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Confirm Cleanup'}</button>
+          <button onClick={runGeminiClassifier} disabled={loading} className="bg-indigo-600 text-white px-4 py-2 rounded">{loading ? '...' : 'Extract Promises & Criticism (Gemini)'}</button>
         </div>
         {status && <div className="text-sm text-slate-700 dark:text-slate-300">{status}</div>}
       </div>

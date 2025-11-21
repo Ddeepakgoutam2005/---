@@ -27,7 +27,7 @@ export default function Promises() {
   }, []);
 
   const filtered = promises.filter((p) =>
-    status ? (status === 'completed' ? (p.status === 'completed' || p.status === 'in_progress') : p.status === status) : true
+    status ? p.status === status : true
   );
 
   return (
@@ -40,6 +40,7 @@ export default function Promises() {
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
           <option value="broken">Broken</option>
         </select>

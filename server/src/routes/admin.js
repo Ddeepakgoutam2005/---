@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import RSSParser from 'rss-parser';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import PromiseRelatedNews from '../models/PromiseRelatedNews.js';
 import NewsUpdate from '../models/NewsUpdate.js';
 import PromiseModel from '../models/Promise.js';
 import Minister from '../models/Minister.js';
@@ -49,9 +50,10 @@ async function callGemini(prompt) {
 }
 
 function buildNewsSummariesPrompt(items) {
+  const header = process.env.GEMINI_SUMMARIES_PROMPT || 'Return STRICTLY a JSON array of { "url": string, "summary": string }.';
   const articles = items.map(n => ({ headline: n.headline, summary: n.summary || '', url: n.url || '', publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString().slice(0,10) : '' }));
   const context = JSON.stringify(articles);
-  return `Summarize the following Indian political news items. Return STRICTLY a JSON array where each item is { "url": string, "summary": string } with 1-2 concise sentences focusing on political promises, commitments or policy actions mentioned. No prose or Markdown.\nArticles JSON:\n${context}`;
+  return `${header}\nArticles JSON:\n${context}`;
 }
 
 const KEYWORDS = [
@@ -89,23 +91,25 @@ async function fetchAndSaveFeed(feedUrl) {
       const text = `${a.headline} ${a.summary}`.toLowerCase();
       let matched = ministerTokens.find(mt => text.includes(mt.nameLower));
       let score = 0;
+      const reasons = [];
       const hasName = !!matched;
-      if (hasName) score += 30;
+      if (hasName) { score += 30; reasons.push('minister'); }
       const verb = verbs.find(v => text.includes(v));
-      if (verb) score += 30;
+      if (verb) { score += 30; reasons.push('verb'); }
       const deadline = /(by\s+\d{4}|next\s+year|this\s+year|within\s+\d+\s+(days|months|years))/i.test(text);
-      if (deadline) score += 10;
-      if (negs.some(n => text.includes(n))) score -= 50;
-      if (specs.some(s => text.includes(s))) score -= 20;
+      if (deadline) { score += 10; reasons.push('deadline'); }
+      if (negs.some(n => text.includes(n))) { score -= 50; reasons.push('negation'); }
+      if (specs.some(s => text.includes(s))) { score -= 20; reasons.push('speculative'); }
       if (hasName && verb) {
         const nameIdx = text.indexOf(matched.nameLower);
         const verbIdx = text.indexOf(verb);
-        if (Math.abs(nameIdx - verbIdx) > 100) score -= 20;
+        if (Math.abs(nameIdx - verbIdx) > 100) { score -= 20; reasons.push('far'); }
       }
       const isCandidate = score >= 60;
+      if (!matched) continue;
       await NewsUpdate.updateOne(
         { url: a.url },
-        { $setOnInsert: a, $set: { isPromiseCandidate: isCandidate, promiseScore: score, candidateMinister: (isCandidate && matched) ? matched.ref._id : undefined } },
+        { $setOnInsert: a, $set: { isPromiseCandidate: isCandidate, promiseScore: score, candidateLog: reasons.join(','), candidateMinister: matched ? matched.ref._id : undefined } },
         { upsert: true }
       );
       saved++;
@@ -291,7 +295,11 @@ router.post('/refresh', requireAuth, requireAdmin, async (req, res) => {
     'https://indianexpress.com/section/political-pulse/feed/',
     'https://www.ndtv.com/rss',
     'https://www.indiatoday.in/rss/1177073',
-    'https://www.hindustantimes.com/feeds/rss/politics/rssfeed.xml'
+    'https://www.hindustantimes.com/feeds/rss/politics/rssfeed.xml',
+    'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml',
+    'https://www.theguardian.com/world/india/rss',
+    'https://www.aljazeera.com/xml/rss/all.xml',
+    'https://rss.dw.com/rdf/rss-en-asia'
   ];
   const feedList = Array.isArray(feeds) && feeds.length ? feeds : defaultFeeds;
   try {
@@ -424,6 +432,84 @@ router.post('/fetch-minister-images', requireAuth, requireAdmin, async (req, res
     return res.json({ ok: true, processed: TARGET_NAMES.length, updated, placeholders, skipped, outPath });
   } catch (e) {
     return res.status(500).json({ error: 'Failed to fetch minister images' });
+  }
+});
+
+// Seed promise-related (criticism) news for a minister
+router.post('/seed-promise-related', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) && req.body.items.length ? req.body.items : [
+      {
+        headline: "Conflict of interest allegations involving son's company (Ceinsys Tech)",
+        summary: 'Allegations that Ceinsys Tech, linked to Nikhil Gadkari, received substantial government orders; share price surged alongside tenders.',
+        url: 'https://economictimes.indiatimes.com/news/politics-and-nation/congress-alleges-scam-in-orders-to-company-linked-to-nitin-gadkaris-son/articleshow/65155770.cms',
+        source: 'economictimes.indiatimes.com',
+      },
+      {
+        headline: 'CAG flags very high Dwarka Expressway construction cost',
+        summary: 'Auditor notes cost escalation to ~₹250.77 crore/km versus ₹18.20 crore/km approved; questions project oversight.',
+        url: 'https://www.thehindu.com/news/national/cag-flags-very-high-construction-cost-of-dwarka-expressway/article67195775.ece',
+        source: 'thehindu.com',
+      },
+      {
+        headline: "Alleged 'luxury bus gift' for daughter’s wedding (Scania)",
+        summary: 'Reports allege Swedish bus maker provided a luxury bus tied to wedding events; Gadkari’s office denies allegations.',
+        url: 'https://thewire.in/politics/scania-luxury-bus-nitin-gadkari-daughter-wedding-report',
+        source: 'thewire.in',
+      },
+      {
+        headline: 'CAG pulls up NHAI for excess toll collection',
+        summary: 'Report says user fees continued at plazas after recovery of capital cost, violating rules and burdening commuters.',
+        url: 'https://indianexpress.com/article/india/cag-pulls-up-nhai-for-collecting-toll-from-commuters-in-violation-of-rules-8891683/',
+        source: 'indianexpress.com',
+      },
+      {
+        headline: 'Environmental criticism of Char Dham road project',
+        summary: 'Critics argue widening and hill cutting in fragile Himalayas increased landslides; concerns over EIA processes.',
+        url: 'https://www.downtoearth.org.in/news/governance/char-dham-project-supreme-court-overrules-its-own-high-powered-committee-80706',
+        source: 'downtoearth.org.in',
+      }
+    ];
+
+    const ministerName = String(req.body?.ministerName || 'Nitin Gadkari');
+    const minister = await Minister.findOne({ name: ministerName });
+    if (!minister) return res.status(404).json({ error: 'Minister not found' });
+
+    let upserted = 0;
+    for (const it of items) {
+      const doc = {
+        headline: it.headline,
+        summary: it.summary,
+        source: it.source || (() => { try { return new URL(it.url).hostname; } catch { return 'unknown'; } })(),
+        url: it.url,
+        publishedAt: it.publishedAt ? new Date(it.publishedAt) : undefined,
+      };
+
+      try {
+        await NewsUpdate.updateOne(
+          { url: doc.url },
+          { $setOnInsert: doc, $set: { candidateMinister: minister._id, isPromiseRelated: true } },
+          { upsert: true }
+        );
+      } catch (_) {}
+
+      await PromiseRelatedNews.updateOne(
+        { url: doc.url },
+        {
+          $setOnInsert: doc,
+          $set: {
+            minister: minister._id,
+            classification: 'critic',
+            confidence: 0.8,
+          },
+        },
+        { upsert: true }
+      );
+      upserted++;
+    }
+    return res.json({ ok: true, upserted, minister: ministerName });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to seed promise-related news' });
   }
 });
 

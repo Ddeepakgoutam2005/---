@@ -8,25 +8,11 @@ router.get('/', async (req, res) => {
   const { status, minister } = req.query;
   const filter = {};
   if (status) {
-    // Map requested 'completed' to include 'in_progress' records
-    if (status === 'completed') {
-      filter.status = { $in: ['completed', 'in_progress'] };
-    } else if (status === 'in_progress') {
-      // Treat explicit in_progress filter as completed
-      filter.status = { $in: ['completed', 'in_progress'] };
-    } else {
-      filter.status = status;
-    }
+    filter.status = status;
   }
   if (minister) filter.minister = minister;
   const raw = await PromiseModel.find(filter).populate('minister').sort({ createdAt: -1 });
-  // Normalize statuses in response: convert 'in_progress' to 'completed'
-  const promises = raw.map(p => {
-    const obj = p.toObject();
-    if (obj.status === 'in_progress') obj.status = 'completed';
-    return obj;
-  });
-  res.json(promises);
+  res.json(raw);
 });
 
 router.get('/:id', async (req, res) => {

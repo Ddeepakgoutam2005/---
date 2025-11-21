@@ -13,6 +13,12 @@ const newsUpdateSchema = new mongoose.Schema({
   promiseScore: { type: Number, default: 0 },
   candidateLog: { type: String },
   candidateMinister: { type: mongoose.Schema.Types.ObjectId, ref: 'Minister', required: false },
+  mentions: [{
+    ministerName: { type: String },
+    classification: { type: String },
+    confidence: { type: Number },
+    snippets: [{ type: String }],
+  }],
 }, { timestamps: true });
 
 newsUpdateSchema.index({ url: 1 }, { unique: true });

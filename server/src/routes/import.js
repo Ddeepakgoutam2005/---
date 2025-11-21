@@ -2,8 +2,11 @@ import { Router } from 'express';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import Minister from '../models/Minister.js';
 import PromiseModel from '../models/Promise.js';
+import { samplePromises as samplePromisesData } from '../data/indianMinisters.js';
 import NewsUpdate from '../models/NewsUpdate.js';
 import PerformanceMetric from '../models/PerformanceMetric.js';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -69,31 +72,29 @@ async function callGemini(prompt) {
 }
 
 function buildNewsToPromisesPrompt(newsItems, ministerNames) {
+  const header = process.env.GEMINI_NEWS_TO_PROMISES_PROMPT || (
+    'Return ONLY a JSON array of extracted promises for EXACT minister names provided.' +
+    ' Each item MUST be: { "ministerName": string, "title": string, "description"?: string, "category"?: string, ' +
+    ' "dateMade": "YYYY-MM-DD", "deadline"?: "YYYY-MM-DD", ' +
+    ' "status": "pending" | "in_progress" | "completed" | "broken", ' +
+    ' "sourceUrl"?: string, "verificationUrl"?: string, "priority"?: "low" | "medium" | "high", "tags"?: string[], ' +
+    ' "evidence"?: string }.' +
+    ' Only return items with explicit commitments. Derive status from the article content as: completed (implemented), in_progress (rolling out/underway), broken (failed/cancelled), pending (announced without progress).'
+  );
   const articles = newsItems.map(n => ({ headline: n.headline, summary: n.summary || '', url: n.url || '', publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString().slice(0,10) : '' }));
   const context = JSON.stringify(articles);
   const namesList = ministerNames.join(', ');
-  return `You are an information extraction system. Given the Indian political news articles below, return only explicit, future-oriented commitments made by the named ministers. Use EXACT names from this list: ${namesList}.
-Return STRICTLY a JSON array (no prose). Each item:
-{
-  "ministerName": string,
-  "title": string,
-  "description"?: string,
-  "category"?: string,
-  "dateMade": string, // YYYY-MM-DD (use article published date)
-  "status": "pending" | "in_progress" | "completed" | "broken",
-  "sourceUrl": string
-}
-Rules: Extract only explicit commitments by a minister (e.g., "will", "pledge", "commit", "plan to"). Ignore general news, speculation, or commentary. Return [] if none.
-Articles JSON:\n${context}`;
+  return `${header}\nMinisters: ${namesList}\nArticles JSON:\n${context}`;
 }
 
 function buildNewsClassifierPrompt(newsItems, ministerNames) {
+  const header = process.env.GEMINI_NEWS_CLASSIFIER_PROMPT || (
+    'Return ONLY JSON. Provide a JSON array of URLs that contain explicit minister promises from the given articles.'
+  );
   const articles = newsItems.map(n => ({ headline: n.headline, summary: n.summary || '', url: n.url || '', publishedAt: n.publishedAt ? new Date(n.publishedAt).toISOString().slice(0,10) : '' }));
   const context = JSON.stringify(articles);
   const namesList = ministerNames.join(', ');
-  return `Classify which articles contain an explicit, verifiable commitment by a named minister. Use EXACT minister names from: ${namesList}.
-Return STRICTLY a JSON array of strings where each string is the article "url" that contains a minister's explicit promise (future-oriented commitment). Return [] if none.
-Articles JSON:\n${context}`;
+  return `${header}\nMinisters: ${namesList}\nArticles JSON:\n${context}`;
 }
 
 // Expanded dataset of Indian ministers with photos and bios
@@ -327,25 +328,7 @@ router.post('/promises', requireAuth, requireAdmin, async (req, res) => {
   }
   if (!Array.isArray(samples) || samples.length === 0) {
     source = 'fallback';
-    samples = [
-    { ministerName: 'Narendra Modi', title: 'Expand Smart City Mission', description: 'Add new cities and improve urban infrastructure.', category: 'Infrastructure', dateMade: '2019-06-01', status: 'completed', sourceUrl: 'https://www.smartcities.gov.in/' },
-    { ministerName: 'Amit Shah', title: 'Strengthen Internal Security Framework', description: 'Enhance police modernization and border management.', category: 'Security', dateMade: '2020-01-15', status: 'pending' },
-    { ministerName: 'Nirmala Sitharaman', title: 'Boost MSME Credit Access', description: 'Simplify loans and credit guarantees for MSMEs.', category: 'Economy', dateMade: '2021-08-01', status: 'completed' },
-    { ministerName: 'Rajnath Singh', title: 'Modernize Defence Procurement', description: 'Accelerate domestic manufacturing through Atmanirbhar Bharat.', category: 'Defence', dateMade: '2022-02-10', status: 'completed' },
-    { ministerName: 'S. Jaishankar', title: 'Strengthen Neighbourhood Diplomacy', description: 'Deepen ties with SAARC and ASEAN nations.', category: 'External Affairs', dateMade: '2021-05-20', status: 'completed' },
-    { ministerName: 'Nitin Gadkari', title: 'Build High-Speed Corridors', description: 'New expressways and logistics parks across India.', category: 'Infrastructure', dateMade: '2020-09-01', status: 'completed' },
-    { ministerName: 'Piyush Goyal', title: 'Promote Export Competitiveness', description: 'Incentives for exporters and new FTAs.', category: 'Commerce', dateMade: '2022-06-05', status: 'pending' },
-    { ministerName: 'Ashwini Vaishnaw', title: 'Railway Modernization and Safety', description: 'Upgrade signalling and station infrastructure.', category: 'Railways', dateMade: '2023-01-10', status: 'completed' },
-    { ministerName: 'Hardeep Singh Puri', title: 'Affordable Urban Housing', description: 'Expand PMAY-Urban with faster approvals.', category: 'Urban Affairs', dateMade: '2021-11-01', status: 'pending' },
-    { ministerName: 'Mansukh Mandaviya', title: 'Improve Public Health Infrastructure', description: 'Upgrade district hospitals and medical colleges.', category: 'Health', dateMade: '2022-04-12', status: 'completed' },
-    { ministerName: 'Dharmendra Pradhan', title: 'Implement NEP Reforms', description: 'Curriculum flexibility and skill integration.', category: 'Education', dateMade: '2021-07-29', status: 'completed' },
-    { ministerName: 'Anurag Thakur', title: 'Promote Digital Broadcasting', description: 'Support adoption of new broadcasting standards.', category: 'Information', dateMade: '2022-10-18', status: 'pending' },
-    { ministerName: 'Smriti Irani', title: 'Strengthen Child Nutrition Programs', description: 'Expand POSHAN Abhiyaan reach.', category: 'WCD', dateMade: '2020-03-08', status: 'completed' },
-    { ministerName: 'Pralhad Joshi', title: 'Legislative Efficiency', description: 'Improve session productivity and discussion time.', category: 'Parliamentary Affairs', dateMade: '2021-12-01', status: 'pending' },
-    { ministerName: 'Gajendra Singh Shekhawat', title: 'Ensure Tap Water to All Households', description: 'Accelerate Jal Jeevan Mission implementation.', category: 'Water Resources', dateMade: '2019-08-15', status: 'completed' },
-    { ministerName: 'Narayan Rane', title: 'MSME Cluster Development', description: 'Support cluster-based growth initiatives.', category: 'MSME', dateMade: '2022-01-20', status: 'pending' },
-    { ministerName: 'Bhupender Yadav', title: 'Strengthen Environmental Compliance', description: 'Streamline clearances while safeguarding ecology.', category: 'Environment', dateMade: '2022-02-28', status: 'completed' },
-    ];
+    samples = samplePromisesData;
   }
 
   // Ensure ministers exist; if DB empty, attempt to import via Gemini, else fallback to embedded dataset
@@ -374,15 +357,19 @@ router.post('/promises', requireAuth, requireAdmin, async (req, res) => {
 
   let created = 0;
   for (const raw of samples) {
-    // Normalize fields
     const s = {
-      ministerName: String(raw.ministerName || '').trim(),
+      ministerName: String((raw.ministerName || raw.minister || '')).trim(),
       title: String(raw.title || '').trim(),
       description: raw.description || '',
       category: raw.category || '',
       dateMade: raw.dateMade || '2022-01-01',
+      deadline: raw.deadline || '',
       status: ['pending','in_progress','completed','broken'].includes(raw.status) ? raw.status : 'pending',
-      sourceUrl: raw.sourceUrl || ''
+      sourceUrl: raw.sourceUrl || '',
+      verificationUrl: raw.verificationUrl || '',
+      priority: ['low','medium','high'].includes(raw.priority) ? raw.priority : 'medium',
+      tags: Array.isArray(raw.tags) ? raw.tags.map(t => String(t)) : [],
+      evidence: raw.evidence || ''
     };
     if (!s.ministerName || !s.title) continue;
 
@@ -394,13 +381,126 @@ router.post('/promises', requireAuth, requireAdmin, async (req, res) => {
       description: s.description,
       category: s.category,
       dateMade: new Date(s.dateMade),
+      deadline: s.deadline ? new Date(s.deadline) : undefined,
       status: s.status,
       sourceUrl: s.sourceUrl,
+      verificationUrl: s.verificationUrl || undefined,
+      priority: s.priority,
+      tags: s.tags,
+      evidence: s.evidence,
     };
     await PromiseModel.updateOne({ minister: minister._id, title: s.title }, { $set: doc }, { upsert: true });
     created++;
   }
   res.json({ ok: true, upserted: created, source });
+});
+
+router.post('/promises-md', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const filePath = String(req.body?.path || path.join(process.cwd(), 'promise.md'));
+    const txt = fs.readFileSync(filePath, 'utf8');
+    function extractObjects(s) {
+      const out = [];
+      let i = 0, n = s.length;
+      let inStr = false, esc = false, depth = 0, start = -1;
+      while (i < n) {
+        const ch = s[i];
+        if (inStr) {
+          if (esc) { esc = false; }
+          else if (ch === '\\') { esc = true; }
+          else if (ch === '"') { inStr = false; }
+          i++;
+          continue;
+        }
+        if (ch === '"') { inStr = true; i++; continue; }
+        if (ch === '{' && depth === 0) { start = i; depth = 1; i++; continue; }
+        if (ch === '{' && depth > 0) { depth++; i++; continue; }
+        if (ch === '}' && depth > 0) {
+          depth--;
+          if (depth === 0 && start >= 0) {
+            const objText = s.slice(start, i + 1);
+            try { const obj = JSON.parse(objText); out.push(obj); } catch (e) {}
+            start = -1;
+          }
+          i++;
+          continue;
+        }
+        i++;
+      }
+      return out;
+    }
+    const raw = extractObjects(txt);
+    const samples = raw.map(o => ({
+      ministerName: String((o.minister || o.ministerName || '')).trim(),
+      title: String(o.title || '').trim(),
+      description: o.description || '',
+      category: o.category || '',
+      dateMade: o.dateMade || '2022-01-01',
+      deadline: o.deadline || '',
+      status: ['pending','in_progress','completed','broken'].includes(o.status) ? o.status : 'pending',
+      sourceUrl: o.sourceUrl || '',
+      verificationUrl: o.verificationUrl || '',
+      priority: ['low','medium','high'].includes(o.priority) ? o.priority : 'medium',
+      tags: Array.isArray(o.tags) ? o.tags.map(t => String(t)) : [],
+      evidence: o.evidence || ''
+    })).filter(p => p.ministerName && p.title);
+
+    const ministerCount = await Minister.countDocuments();
+    if (ministerCount === 0) {
+      let ministers = ministersData;
+      const normalized = ministers.map(m => ({
+        name: String(m.name || '').trim(),
+        ministry: String(m.ministry || '').trim(),
+        party: m.party || '',
+        constituency: m.constituency || '',
+        photoUrl: m.photoUrl || '',
+        bio: m.bio || ''
+      })).filter(m => m.name && m.ministry);
+      for (const m of normalized) {
+        await Minister.updateOne({ name: m.name }, { $set: m }, { upsert: true });
+      }
+    }
+
+    let created = 0;
+    for (const raw of samples) {
+      const s = {
+        ministerName: String((raw.ministerName || '')).trim(),
+        title: String(raw.title || '').trim(),
+        description: raw.description || '',
+        category: raw.category || '',
+        dateMade: raw.dateMade || '2022-01-01',
+        deadline: raw.deadline || '',
+        status: ['pending','in_progress','completed','broken'].includes(raw.status) ? raw.status : 'pending',
+        sourceUrl: raw.sourceUrl || '',
+        verificationUrl: raw.verificationUrl || '',
+        priority: ['low','medium','high'].includes(raw.priority) ? raw.priority : 'medium',
+        tags: Array.isArray(raw.tags) ? raw.tags.map(t => String(t)) : [],
+        evidence: raw.evidence || ''
+      };
+      if (!s.ministerName || !s.title) continue;
+      const minister = await Minister.findOne({ name: s.ministerName });
+      if (!minister) continue;
+      const doc = {
+        minister: minister._id,
+        title: s.title,
+        description: s.description,
+        category: s.category,
+        dateMade: new Date(s.dateMade),
+        deadline: s.deadline ? new Date(s.deadline) : undefined,
+        status: s.status,
+        sourceUrl: s.sourceUrl,
+        verificationUrl: s.verificationUrl || undefined,
+        priority: s.priority,
+        tags: s.tags,
+        evidence: s.evidence,
+      };
+      await PromiseModel.updateOne({ minister: minister._id, title: s.title }, { $set: doc }, { upsert: true });
+      created++;
+    }
+    res.json({ ok: true, upserted: created, source: 'md_file', path: filePath });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to import from md' });
+  }
 });
 
 // Create/update promises inferred from recent NewsUpdate items
