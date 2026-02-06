@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Query from '../models/Query.js';
 import PromiseModel from '../models/Promise.js';
+import NewsUpdate from '../models/NewsUpdate.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import mongoose from 'mongoose';
 
@@ -32,10 +33,42 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.get('/my', requireAuth, async (req, res) => {
   try {
-    const items = await Query.find({ user: req.user.id }).sort({ createdAt: -1 }).select('_id relatedId message status createdAt meta relatedType');
+    const items = await Query.find({ user: req.user.id }).sort({ createdAt: -1 }).select('_id relatedId message status createdAt meta relatedType updates');
     return res.json(items);
   } catch (e) {
     return res.status(500).json({ error: 'Failed to fetch my queries' });
+  }
+});
+
+router.post('/:id/reply', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+    
+    if (!message || typeof message !== 'string' || message.trim().length < 2) {
+      return res.status(400).json({ error: 'Message too short' });
+    }
+
+    const query = await Query.findOne({ _id: id, user: req.user.id });
+    if (!query) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const update = {
+      sender: 'user',
+      message: message.trim(),
+      timestamp: new Date()
+    };
+
+    query.updates = query.updates || [];
+    query.updates.push(update);
+    query.status = 'open'; // Re-open if it was resolved
+    await query.save();
+
+    return res.json({ success: true, update });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'Failed to add reply' });
   }
 });
 
@@ -46,7 +79,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
     if (status) filter.status = status;
     if (relatedType) filter.relatedType = relatedType;
     if (minister) filter['meta.minister'] = new RegExp(String(minister), 'i');
-    let q = Query.find(filter).sort({ createdAt: -1 }).skip((Number(page) - 1) * Number(pageSize)).limit(Number(pageSize)).populate('user', 'name email role');
+    let q = Query.find(filter).sort({ updatedAt: -1, createdAt: -1 }).skip((Number(page) - 1) * Number(pageSize)).limit(Number(pageSize)).populate('user', 'name email role');
     const items = await q;
     const total = await Query.countDocuments(filter);
     return res.json({ items, total, page: Number(page), pageSize: Number(pageSize) });

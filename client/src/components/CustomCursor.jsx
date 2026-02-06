@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import './CustomCursor.css';
 
 const CustomCursor = () => {

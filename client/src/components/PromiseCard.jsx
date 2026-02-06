@@ -95,10 +95,28 @@ export default function PromiseCard({ promise, user, onReport }) {
         
         {user && (
           <button 
-            onClick={() => onReport({ relatedType: 'promise', relatedId: promise._id, title: promise.title })}
-            className="text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
+            onClick={() => !promise.userReportStatus && onReport({ relatedType: 'promise', relatedId: promise._id, title: promise.title })}
+            disabled={!!promise.userReportStatus}
+            className={`text-xs font-medium ${
+              promise.userReportStatus 
+                ? 'cursor-default flex items-center gap-1' 
+                : 'text-red-600 hover:text-red-700 hover:underline'
+            } ${
+              promise.userReportStatus === 'resolved' 
+                ? 'text-civic-blue dark:text-blue-400' 
+                : promise.userReportStatus 
+                  ? 'text-civic-green dark:text-green-400'
+                  : ''
+            }`}
           >
-            Report Issue
+            {promise.userReportStatus ? (
+              <>
+                <FiCheckCircle className="w-3 h-3" />
+                {promise.userReportStatus === 'resolved' ? 'Reported & Resolved' : 'Reported'}
+              </>
+            ) : (
+              'Report Issue'
+            )}
           </button>
         )}
       </div>

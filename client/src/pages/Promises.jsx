@@ -17,14 +17,42 @@ export default function Promises() {
   const { user } = useAuth();
 
   useEffect(() => {
-    Promise.all([
-      apiGet('/api/promises'),
-      apiGet('/api/ministers')
-    ]).then(([pData, mData]) => {
-      setPromises(pData || []);
-      setMinisters(mData || []);
-    }).catch(console.error);
-  }, []);
+    async function fetchData() {
+      try {
+        const [pData, mData] = await Promise.all([
+          apiGet('/api/promises'),
+          apiGet('/api/ministers')
+        ]);
+        
+        let userReportStatus = new Map();
+        if (user) {
+          try {
+            const reports = await apiGet('/api/queries/my');
+            if (Array.isArray(reports)) {
+              reports.forEach(r => {
+                if (r.relatedType === 'promise') {
+                  userReportStatus.set(r.relatedId, r.status);
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Failed to fetch user reports', e);
+          }
+        }
+
+        const promisesWithReportStatus = (pData || []).map(p => ({
+          ...p,
+          userReportStatus: userReportStatus.get(p._id)
+        }));
+
+        setPromises(promisesWithReportStatus);
+        setMinisters(mData || []);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchData();
+  }, [user]);
 
   const filteredPromises = useMemo(() => {
     return promises.filter(p => {
@@ -179,10 +207,28 @@ export default function Promises() {
 
               {user && (
                 <button 
-                  onClick={() => setReport({ relatedType: 'promise', relatedId: p._id, title: p.title })}
-                  className="px-4 py-2 text-sm font-medium text-civic-gray-500 dark:text-gray-400 hover:text-civic-red border border-transparent hover:border-civic-red/20 rounded-lg transition-colors whitespace-nowrap"
+                  onClick={() => !p.userReportStatus && setReport({ relatedType: 'promise', relatedId: p._id, title: p.title })}
+                  disabled={!!p.userReportStatus}
+                  className={`px-4 py-2 text-sm font-medium border rounded-lg transition-colors whitespace-nowrap ${
+                    p.userReportStatus 
+                      ? 'cursor-default flex items-center gap-1' 
+                      : 'text-civic-gray-500 dark:text-gray-400 hover:text-civic-red border-transparent hover:border-civic-red/20'
+                  } ${
+                    p.userReportStatus === 'resolved' 
+                      ? 'text-civic-blue border-civic-blue/20 dark:text-blue-400 dark:border-blue-500/20' 
+                      : p.userReportStatus 
+                        ? 'text-civic-green border-civic-green/20 dark:text-green-400 dark:border-green-500/20'
+                        : ''
+                  }`}
                 >
-                  Report Issue
+                  {p.userReportStatus ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {p.userReportStatus === 'resolved' ? 'Reported & Resolved' : 'Reported'}
+                    </>
+                  ) : (
+                    'Report Issue'
+                  )}
                 </button>
               )}
             </div>

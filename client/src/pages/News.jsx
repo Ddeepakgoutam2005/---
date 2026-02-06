@@ -1,27 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { apiGet } from '../lib/api.js';
 import { useAuth } from '../hooks/useAuth.js';
 import ReportModal from '../components/ReportModal.jsx';
 import { API_URL } from '../lib/api.js';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { useLocation } from 'react-router-dom';
 
 export default function News() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(50);
   const [report, setReport] = useState(null);
+  const [highlightedNewsId, setHighlightedNewsId] = useState(null);
   const { user } = useAuth();
+  const location = useLocation();
+  const newsRefs = useRef({});
+  const targetNewsIdRef = useRef(null);
 
   async function loadNews() {
     const data = await apiGet('/api/news');
-    setItems(Array.isArray(data) ? data : []);
+    let newsItems = Array.isArray(data) ? data : [];
+
+    if (user) {
+      try {
+        const reports = await apiGet('/api/queries/my');
+        const userReportStatus = new Map();
+        reports.filter(r => r.relatedType === 'news').forEach(r => {
+          userReportStatus.set(r.relatedId, r.status);
+        });
+        
+        newsItems = newsItems.map(n => ({
+          ...n,
+          userReportStatus: userReportStatus.get(n._id) // 'open' or 'resolved' or undefined
+        }));
+      } catch (e) {
+        console.error('Failed to fetch user reports', e);
+      }
+    }
+
+    setItems(newsItems);
+
+    // Check for highlight ID from navigation state or hash
+    const highlightId = location.state?.highlightNewsId || 
+                        (location.hash ? location.hash.replace('#news-', '') : null);
+    
+    if (highlightId) {
+      targetNewsIdRef.current = highlightId;
+      setHighlightedNewsId(highlightId);
+      // Clear highlight after 4 seconds
+      setTimeout(() => setHighlightedNewsId(null), 4000);
+    }
   }
 
   useEffect(() => {
     AOS.init({ duration: 600, once: true, offset: 40 });
     loadNews().then(() => setTimeout(() => AOS.refresh(), 100)).catch(console.error);
-  }, []);
+  }, [user, location]);
+
+  // Scroll to highlighted news when loaded
+  useEffect(() => {
+    if (highlightedNewsId && newsRefs.current[highlightedNewsId]) {
+      setTimeout(() => {
+        newsRefs.current[highlightedNewsId]?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 500);
+    }
+  }, [highlightedNewsId, items]);
 
   async function fetchAndSave() {
     try {
@@ -99,9 +146,14 @@ export default function News() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.slice(0, visible).map((n) => (
               <article 
-                key={n._id} 
-                className="flex flex-col h-full bg-white dark:bg-white/5 border border-civic-gray-200 dark:border-white/10 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden backdrop-blur-sm cursor-pointer group" 
-                data-aos="fade-up"
+                key={n._id}
+                ref={el => newsRefs.current[n._id] = el}
+                className={`flex flex-col h-full bg-white dark:bg-white/5 border border-civic-gray-200 dark:border-white/10 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden backdrop-blur-sm cursor-pointer group ${
+                  highlightedNewsId === n._id 
+                    ? 'ring-2 ring-civic-blue shadow-lg scale-[1.02] bg-blue-50/50 dark:bg-blue-900/10' 
+                    : ''
+                }`}
+                data-aos={targetNewsIdRef.current === n._id ? null : "fade-up"}
                 onClick={() => window.open(n.url, '_blank')}
               >
                 <div className="p-5 flex-1 flex flex-col">
@@ -135,13 +187,33 @@ export default function News() {
                   
                   {user && (
                     <button 
-                      className="text-xs text-civic-gray-400 dark:text-gray-500 hover:text-red-600 transition-colors relative z-10"
+                      className={`text-xs transition-colors relative z-10 ${
+                        n.userReportStatus 
+                          ? 'cursor-default flex items-center gap-1 font-medium' 
+                          : 'text-civic-gray-400 dark:text-gray-500 hover:text-red-600'
+                      } ${
+                        n.userReportStatus === 'resolved' 
+                          ? 'text-civic-blue dark:text-blue-400' 
+                          : n.userReportStatus 
+                            ? 'text-civic-green dark:text-green-400'
+                            : ''
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setReport({ relatedType: 'news', relatedId: n._id, title: n.headline });
+                        if (!n.userReportStatus) {
+                          setReport({ relatedType: 'news', relatedId: n._id, title: n.headline });
+                        }
                       }}
+                      disabled={!!n.userReportStatus}
                     >
-                      Report Issue
+                      {n.userReportStatus ? (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                          {n.userReportStatus === 'resolved' ? 'Reported & Resolved' : 'Reported'}
+                        </>
+                      ) : (
+                        'Report Issue'
+                      )}
                     </button>
                   )}
                 </div>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { apiGet } from '../lib/api.js';
 import { useAuth } from '../hooks/useAuth.js';
 import ReportModal from '../components/ReportModal.jsx';
@@ -8,12 +8,17 @@ import PromiseCard from '../components/PromiseCard.jsx';
 
 export default function MinisterDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const [minister, setMinister] = useState(null);
   const [promises, setPromises] = useState([]);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
+  const [highlightedPromiseId, setHighlightedPromiseId] = useState(null);
   const { user } = useAuth();
+  
+  // Create refs map to scroll to specific promise
+  const promiseRefs = useRef({});
 
   useEffect(() => {
     async function load() {
@@ -21,9 +26,41 @@ export default function MinisterDetail() {
         const m = await apiGet(`/api/ministers/${id}`);
         const p = await apiGet(`/api/promises?minister=${id}`);
         const t = await apiGet(`/api/performance/trends?minister=${id}&months=12`);
+        
+        // Fetch user's reports to check which promises are reported
+        let userReportStatus = new Map();
+        if (user) {
+          try {
+            const reports = await apiGet('/api/queries/my');
+            if (Array.isArray(reports)) {
+              reports.forEach(r => {
+                if (r.relatedType === 'promise') {
+                  userReportStatus.set(r.relatedId, r.status);
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Failed to fetch user reports', e);
+          }
+        }
+
         setMinister(m);
-        setPromises(p);
+        // Add reported status to promises
+        setPromises(p.map(promise => ({
+          ...promise,
+          userReportStatus: userReportStatus.get(promise._id)
+        })));
         setTrend(t);
+        
+        // Check for highlight ID from navigation state or hash
+        const highlightId = location.state?.highlightPromiseId || 
+                            (location.hash ? location.hash.replace('#promise-', '') : null);
+        
+        if (highlightId) {
+          setHighlightedPromiseId(highlightId);
+          // Clear highlight after 3 seconds
+          setTimeout(() => setHighlightedPromiseId(null), 3000);
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -31,7 +68,19 @@ export default function MinisterDetail() {
       }
     }
     load();
-  }, [id]);
+  }, [id, location, user]);
+
+  // Scroll to highlighted promise when promises are loaded and highlightId is set
+  useEffect(() => {
+    if (!loading && highlightedPromiseId && promiseRefs.current[highlightedPromiseId]) {
+      setTimeout(() => {
+        promiseRefs.current[highlightedPromiseId]?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 500); // Small delay to ensure rendering
+    }
+  }, [loading, highlightedPromiseId]);
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-[50vh]">
@@ -122,12 +171,22 @@ export default function MinisterDetail() {
               </div>
             ) : (
               promises.map(p => (
-                <PromiseCard 
+                <div 
                   key={p._id} 
-                  promise={p} 
-                  user={user} 
-                  onReport={(r) => setReport(r)} 
-                />
+                  ref={el => promiseRefs.current[p._id] = el}
+                  className={`transition-all duration-500 rounded-xl ${
+                    highlightedPromiseId === p._id 
+                      ? 'ring-2 ring-civic-blue shadow-lg scale-[1.02] bg-blue-50/50 dark:bg-blue-900/10' 
+                      : ''
+                  }`}
+                >
+                  <PromiseCard 
+                    promise={p} 
+                    user={user} 
+                    onReport={(r) => setReport(r)}
+                    userReports={promises.filter(promise => promise.isReportedByCurrentUser)} // Assuming this flag or logic needs to be passed
+                  />
+                </div>
               ))
             )}
           </div>

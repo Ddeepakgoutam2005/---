@@ -20,6 +20,8 @@
     "concurrently": "^9.2.1"
   },
   "dependencies": {
-    "@openrouter/sdk": "^0.5.1"
+    "@openrouter/sdk": "^0.5.1",
+    "@react-oauth/google": "^0.13.4",
+    "google-auth-library": "^10.5.0"
   }
 }

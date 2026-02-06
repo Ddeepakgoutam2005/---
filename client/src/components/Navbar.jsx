@@ -57,7 +57,6 @@ export default function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-4 md:hidden">
-            <LanguageSwitcher />
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -81,17 +80,24 @@ export default function Navbar() {
               {isAdmin && <NavLink to="/admin/queries" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Queries</NavLink>}
               {user && <NavLink to="/my/queries" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>My Queries</NavLink>}
               
-              <div className="pt-4 mt-2 border-t border-civic-gray-200 dark:border-white/10">
+              <div className="pt-4 mt-2 border-t border-civic-gray-200 dark:border-white/10 flex items-center justify-between px-4">
                 {!user ? (
-                  <NavLink to="/auth" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Login</NavLink>
+                  <NavLink 
+                    to="/auth" 
+                    className="text-base font-medium text-civic-gray-600 hover:text-civic-blue dark:text-gray-300 dark:hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </NavLink>
                 ) : (
                   <button 
                     onClick={() => { logout(); setIsMenuOpen(false); }} 
-                    className="w-full text-left px-4 py-2 text-base font-medium text-civic-gray-600 hover:bg-civic-gray-50 hover:text-civic-red dark:text-gray-300 dark:hover:bg-white/5 transition-colors rounded-md"
+                    className="text-base font-medium text-civic-gray-600 hover:text-civic-red dark:text-gray-300 dark:hover:text-white transition-colors"
                   >
                     Logout
                   </button>
                 )}
+                <LanguageSwitcher />
               </div>
             </nav>
           </div>

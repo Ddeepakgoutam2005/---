@@ -11,7 +11,11 @@ import fs from 'fs';
 import path from 'path';
 
 const router = Router();
-const rss = new RSSParser();
+const rss = new RSSParser({
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+  }
+});
 
 // Gemini integration for optional news summarization
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
@@ -290,12 +294,11 @@ router.post('/refresh', requireAuth, requireAdmin, async (req, res) => {
   const { feeds, saveNews = true, recomputeMetrics = true, geminiSummarize = false } = req.body || {};
   // default feeds: Indian political news sources
   const defaultFeeds = [
-    'https://timesofindia.indiatimes.com/rss.cms',
+    'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms',
     'https://www.thehindu.com/news/national/feeder/default.rss',
     'https://indianexpress.com/section/political-pulse/feed/',
-    'https://www.ndtv.com/rss',
-    'https://www.indiatoday.in/rss/1177073',
-    'https://www.hindustantimes.com/feeds/rss/politics/rssfeed.xml',
+    'https://www.indiatoday.in/rss/1206514',
+    'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml',
     'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml',
     'https://www.theguardian.com/world/india/rss',
     'https://www.aljazeera.com/xml/rss/all.xml',

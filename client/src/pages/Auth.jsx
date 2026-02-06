@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../lib/api.js';
 import { useAuth } from '../hooks/useAuth.js';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Auth() {
   const [mode, setMode] = useState('login');
@@ -12,6 +13,27 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  async function handleGoogleSuccess(credentialResponse) {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Google login failed');
+      
+      login(data.token, data.user);
+      setStatus(`Logged in as ${data.user?.email}`);
+      navigate(data.user?.role === 'admin' ? '/admin' : '/');
+    } catch (e) {
+      setStatus(String(e.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function doLogin(e) {
     e.preventDefault();
@@ -76,6 +98,23 @@ export default function Auth() {
           </div>
 
           <form className="space-y-6" onSubmit={mode === 'login' ? doLogin : doSignup}>
+            <div className="flex justify-center w-full mb-6">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setStatus('Google Login Failed')}
+                theme="filled_blue"
+                shape="pill"
+                text={mode === 'login' ? "signin_with" : "signup_with"}
+                width="350"
+              />
+            </div>
+            
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-civic-gray-200 dark:border-white/10"></div>
+              <span className="flex-shrink-0 mx-4 text-civic-gray-400 text-sm">Or continue with email</span>
+              <div className="flex-grow border-t border-civic-gray-200 dark:border-white/10"></div>
+            </div>
+
             {mode === 'signup' && (
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-civic-gray-700 dark:text-gray-300 mb-1">Full Name</label>

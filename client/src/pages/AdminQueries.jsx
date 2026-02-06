@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { API_URL } from '../lib/api.js';
 
 export default function AdminQueries() {
@@ -85,13 +86,13 @@ export default function AdminQueries() {
                 <div>
                    <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-civic-gray-500 dark:text-gray-400 bg-civic-gray-100 dark:bg-white/10 px-2 py-0.5 rounded">
-                      {q.relatedType}
+                      {q.relatedType.charAt(0).toUpperCase() + q.relatedType.slice(1)}
                     </span>
                     <span className="text-civic-gray-300 dark:text-gray-600">•</span>
                     <span className="text-xs text-civic-gray-500 dark:text-gray-400">{new Date(q.createdAt).toLocaleString()}</span>
                   </div>
                   <h3 className="text-lg font-bold text-civic-gray-900 dark:text-white flex items-center gap-2">
-                    {q.meta?.headline || q.meta?.title || 'Untitled Issue'}
+                    {q.meta?.promiseTitle || q.meta?.headline || q.meta?.title || 'Untitled Issue'}
                   </h3>
                   <div className="text-sm text-civic-gray-500 dark:text-gray-400 mt-1">
                     Submitted by: <span className="font-medium text-civic-gray-700 dark:text-gray-300">{q.user?.name}</span> ({q.user?.email})
@@ -102,10 +103,48 @@ export default function AdminQueries() {
               
               <div className="bg-civic-gray-50 dark:bg-white/5 rounded-lg p-4 mb-4 border border-civic-gray-100 dark:border-white/10">
                 <p className="text-civic-gray-700 dark:text-gray-300 text-sm leading-relaxed">{q.message}</p>
+                
+                {/* Previous updates/replies */}
+                {q.updates && q.updates.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-civic-gray-200 dark:border-white/10 space-y-3">
+                    {q.updates.map((update, idx) => (
+                      <div key={idx} className={`text-sm p-3 rounded-lg ${update.sender === 'admin' ? 'bg-civic-blue/10 dark:bg-blue-900/20 ml-4' : 'bg-white dark:bg-white/5 mr-4'}`}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-xs opacity-75">{update.sender === 'admin' ? 'Support Team' : (q.user?.name || 'User')}</span>
+                          <span className="text-xs opacity-50">{new Date(update.timestamp).toLocaleString()}</span>
+                        </div>
+                        <p className="text-civic-gray-700 dark:text-gray-300">{update.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
-              {q.status !== 'resolved' && (
-                <div className="flex justify-end pt-4 border-t border-civic-gray-100 dark:border-white/10">
+              <div className="flex justify-between items-center pt-4 border-t border-civic-gray-100 dark:border-white/10">
+                <div className="flex gap-3">
+                   {q.relatedType === 'promise' && q.meta?.ministerId && (
+                    <Link
+                      to={`/ministers/${q.meta.ministerId}`}
+                      state={{ highlightPromiseId: q.relatedId }}
+                      className="flex items-center gap-1.5 text-sm font-medium text-civic-blue dark:text-blue-400 hover:text-civic-blue/80 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      View Minister
+                    </Link>
+                  )}
+                  {q.relatedType === 'news' && (
+                    <Link
+                      to="/news"
+                      state={{ highlightNewsId: q.relatedId }}
+                      className="flex items-center gap-1.5 text-sm font-medium text-civic-blue dark:text-blue-400 hover:text-civic-blue/80 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                      View News
+                    </Link>
+                  )}
+                </div>
+
+                {q.status !== 'resolved' && (
                   <button 
                     onClick={() => markResolved(q._id)}
                     className="flex items-center gap-2 px-4 py-2 bg-civic-green dark:bg-green-600 text-white rounded-lg hover:bg-civic-green/90 dark:hover:bg-green-500 transition-colors text-sm font-medium shadow-sm"
@@ -113,8 +152,8 @@ export default function AdminQueries() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                     Mark as Resolved
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>
