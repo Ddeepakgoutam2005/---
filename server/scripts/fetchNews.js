@@ -17,7 +17,7 @@ async function run() {
     url: i.link,
     sentiment: 'neutral',
     relevanceScore: 0.5,
-    publishedAt: i.pubDate ? new Date(i.pubDate) : undefined,
+    publishedAt: i.pubDate ? new Date(i.pubDate) : new Date(),
   }));
   let saved = 0;
   for (const a of articles) {

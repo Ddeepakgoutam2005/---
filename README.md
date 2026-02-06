@@ -1,172 +1,121 @@
 # Political Promise Tracker
 
-An end‑to‑end web application that tracks political promises made by Indian ministers, ingests related news, and presents performance analytics and dashboards.
+An end-to-end web application that tracks political promises made by Indian ministers, ingests related news using AI, and presents performance analytics and dashboards.
 
-## Overview
-- Monorepo with `server` (Node/Express/Mongo) and `client` (React/Vite/Tailwind) apps
-- Ingests RSS feeds, detects promise‑like articles, links them to ministers/promises, and computes monthly performance metrics
-- Supports authentication (JWT) with admin tools to refresh data and run AI‑assisted classification
+## 🚀 Features
 
-## Tech Stack
-- Backend: `express`, `mongoose`, `rss-parser`, `jsonwebtoken`, `bcryptjs`
-- DB: MongoDB; falls back to `mongodb-memory-server` for local/in‑memory runs
-- Frontend: `react`, `vite`, `tailwindcss`, `react-router-dom`, `chart.js`, `react-chartjs-2`, `framer-motion`
+- **Minister Dashboard**: detailed profiles, promise completion rates, and trend analysis.
+- **Promise Tracking**: Categorized by status (Pending, In Progress, Fulfilled).
+- **AI-Powered News**: Automatically fetches news, classifies it using Gemini AI, and links it to specific promises.
+- **Performance Analytics**: Visual charts for monthly trends and completion statistics.
+- **Admin Panel**: Tools for data seeding, news ingestion, and content management.
+- **Responsive Design**: Modern UI with dark mode support.
 
-## Architecture
-- API server entry: `server/src/server.js`
-  - Connects to DB, sets routes, seeds minimal demo data when using in‑memory DB
-  - Routes under `/api/*` for auth, ministers, promises, news, performance, admin, import, queries
-- Data models: `server/src/models/*`
-  - `Minister`, `Promise`, `NewsUpdate`, `PromiseRelatedNews`, `PerformanceMetric`, `User`, `Query`, `ReviewQueue`
-- Frontend entry: `client/src/main.jsx`, app shell in `client/src/App.jsx`
-  - Pages for dashboard, ministers, minister detail, promises, news, auth, admin, queries
+## 🛠 Tech Stack
 
-## Key Files
-- Server
-  - `server/src/server.js` – API bootstrap and route wiring
-  - `server/src/utils/db.js` – Mongo connection with in‑memory fallback
-  - `server/src/routes/*.js` – REST endpoints (auth, ministers, promises, news, performance, admin, import, queries)
-  - `server/src/routes/adminGemini.js` – RSS ingestion + Gemini classification into `promise` / `critic` / `other`
-  - `server/src/models/PromiseRelatedNews.js` – dedicated model for promise‑related criticism news
-  - `server/scripts/*` – CLI scripts (seed, fetch news, inspect news, create admin, Gemini import)
-  - `server/scripts/seedPromiseRelated.js` – example seeding of criticism items for a minister
-- Client
-  - `client/src/lib/api.js` – API base URL and helpers
-  - `client/src/context/AuthContext.jsx` – JWT token management and current user state
-  - `client/src/pages/*` – route pages
-  - `client/src/components/*` – charts, cards, modals, protected route
+- **Frontend**: React, Vite, Tailwind CSS, Chart.js, Framer Motion
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB (with Mongoose)
+- **AI Integration**: Google Gemini AI (for news classification)
 
-## Data Model
-- `Minister` – name, ministry, party, photo, bio, constituency
-- `Promise` – minister ref, title, description, category, `dateMade`, optional `deadline`, `status` (`pending|in_progress|completed|broken`), `sourceUrl`
-  - Note: `in_progress` is treated as `completed` in responses and analytics
-- `NewsUpdate` – headline, summary, source, url, publishedAt, classification flags, linked `promise`
-- `PromiseRelatedNews` – criticism/controversy news tied to a minister; links back to `NewsUpdate` via `newsUpdate`
-- `PerformanceMetric` – per‑minister monthly metrics: totals, breakdown, rate, score
-- `User` – name, email, password hash, role (`viewer|admin`)
-- `Query` – user‑submitted report tied to a `news` or `promise`
-- `ReviewQueue` – items queued for admin review (e.g., AI classifications)
+## 📂 Project Structure
 
-## Backend API
-- Auth: `/api/auth`
-  - `POST /signup` – create viewer user
-  - `POST /login` – JWT login
-  - `GET /me` – current user info
-- Ministers: `/api/ministers`
-  - `GET /` – list ministers (search with `?q=`)
-  - `GET /:id` – minister details
-  - `GET /:id/dashboard` – minister, promises, metrics, recent news aggregate
-  - `POST /` `PUT /:id` `DELETE /:id` – protected by JWT
-- Promises: `/api/promises`
-  - `GET /` – list promises; filters: `status`, `minister`
-  - `GET /:id` – promise details
-  - `POST /` `PUT /:id` `DELETE /:id` – protected by JWT
-  - Status normalization: `in_progress` is returned as `completed`
-- News: `/api/news`
-  - `GET /` – list news (filters: `candidate=true|false`, `related=true|false`, `minister`, `limit`)
-  - `POST /fetch` – parse one feed and return enriched items (no save)
-  - `POST /fetch-and-save` – parse one feed, enrich, upsert into DB
-  - `GET /related` – list promise‑related criticism (`PromiseRelatedNews`) filtered by `minister` and `limit`
-- Performance: `/api/performance`
-  - `GET /summary` – leaderboard with completion stats
-  - `GET /trends?minister=&months=` – monthly breakdown with completion rate
-- Admin: `/api/admin`
-  - `POST /refresh` – pull multiple RSS feeds, heuristic classify, optional Gemini summarization, recompute metrics
-  - `POST /refresh-gemini` – pull RSS feeds and classify each item with Gemini into `promise`, `critic` (promise‑related), or `other`; auto‑attach when confidence passes thresholds
-  - `POST /cleanup-promises` – AI/heuristic validation to remove non‑promises
-  - `POST /cleanup-news` – unlink weakly scored news from promises
-  - `POST /fetch-minister-images` – Wikipedia images into `photoUrl`
-- Import: `/api/import`
-  - `POST /ministers` – upsert ministers (payload or built‑in dataset)
-  - `POST /promises` – upsert promises (payload, Gemini, or heuristic from news)
-  - `POST /promises-from-news` – infer promises from recent news
-- Queries: `/api/queries`
-  - `POST /` – viewer submits a query on `news` or `promise`
-  - `GET /my` – current user queries
-  - `GET /` – admin list with filters/pagination
-  - `PUT /:id/status` – admin mark resolved
+- **client/**: React frontend application.
+- **server/**: Express backend API.
+- **server/scripts/**: Utility scripts for seeding data, fetching news, and admin tasks.
 
-## Ingestion & Classification Workflow
-1. Fetch feeds via `rss-parser` and store `NewsUpdate` items
-2. Detect promise candidates using commitment phrases and minister name proximity heuristics
-3. Run Gemini‑based classification to label each item as `promise`, `critic` (promise‑related), or `other`
-   - `promise` → create/attach a `Promise` with `title`, `description`, `dateMade`, `deadline?`, `status`, `sourceUrl`, `evidence`
-   - `critic` → create/attach a `PromiseRelatedNews` linked to the minister and `NewsUpdate`
-   - `other` → remain in `NewsUpdate`
-4. Link news to promises by `url` when applicable and update confidence/evidence
-5. Recompute monthly `PerformanceMetric` for affected ministers
+## 🏁 Getting Started
 
-## Frontend Workflow
-- Auth and token persistence via `AuthContext` and `useAuth`
-- Pages
-  - Dashboard: summary charts and tracker
-  - Ministers: filter/search, profiles and badges
-  - Minister Detail: profile, promise list, monthly trend, related news, reporting
-  - Promises: status filter, related news, reporting
-  - News: latest promise‑related items; admin can refresh feeds
-  - Auth: signup/login; redirects based on role
-  - Admin: login plus actions (refresh feeds, fetch images, run classifier)
-  - Admin Queries: manage user reports
-  - My Queries: viewer’s submitted reports
-
-## Setup
 ### Prerequisites
-- Node.js 18+
-- MongoDB (optional for persistent storage)
 
-### Environment
-- Server `.env` (see `server/.env.example`):
-  - `PORT` – server port
-  - `MONGO_URI` – Mongo connection string; omit to use in‑memory DB
-  - `JWT_SECRET` – secret for JWT signing
-  - `API_BASE_URL` – used by scripts
-  - Gemini: `GEMINI_API_KEY` (required to use `POST /api/admin/refresh-gemini`)
-  - Optional prompt overrides: `GEMINI_CLASSIFIER_PROMPT`, `GEMINI_NEWS_TO_PROMISES_PROMPT`, `GEMINI_NEWS_CLASSIFIER_PROMPT`
-- Client `.env`:
-  - `VITE_API_URL` – API base, e.g., `http://localhost:5000`
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [MongoDB](https://www.mongodb.com/) (Local or Atlas) - *Optional for local dev (uses in-memory DB if missing)*
 
-### Install
+### Local Setup (Simultaneous)
+
+1.  **Clone the repository**
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+    (This installs dependencies for root, client, and server)
+
+3.  **Environment Setup**:
+    - Create a `.env` file in the root directory.
+    - Copy contents from `.env.example`.
+    - *Note: For local development, `MONGO_URI` is optional. If skipped, it uses an in-memory database.*
+
+4.  **Run the App**:
+    ```bash
+    npm run dev
+    ```
+    - Server: `http://localhost:5000`
+    - Client: `http://localhost:5173`
+
+### Manual / Individual Start
+
+**Server:**
 ```bash
-cd server && npm install
-cd ../client && npm install
+cd server
+npm install
+npm run dev
 ```
 
-### Run Dev
+**Client:**
 ```bash
-# Terminal 1
-cd server
-npm run dev
-
-# Terminal 2
 cd client
+npm install
 npm run dev
 ```
 
-### Seed & Admin
-```bash
-cd server
-npm run seed           # demo ministers/promises
-npm run create:admin   # create/update admin (credentials from .env)
-node scripts/seedPromiseRelated.js  # example: seed criticism items for Nitin Gadkari
-```
+## 🌍 Deployment Guide
 
-### Optional: Gemini Import
-```bash
-cd server
-npm run import:gemini  # upserts ministers/promises via Gemini or fallback dataset
-```
+### 1. Database (MongoDB Atlas)
+- Create a cluster on [MongoDB Atlas](https://www.mongodb.com/atlas).
+- Get your connection string (e.g., `mongodb+srv://...`).
+- Allow access from anywhere (`0.0.0.0/0`) in Network Access.
 
-## Conventions & Notes
-- Status handling: `in_progress` is surfaced as `completed` in API and charts for simplified reporting
-- When `MONGO_URI` is not set, data is ephemeral (in‑memory) and seeded at startup
-- Admin endpoints require `Authorization: Bearer <token>` and `role=admin`
+### 2. Backend (Render)
+- Connect your repo to [Render](https://render.com/).
+- Create a **Web Service**.
+- **Root Directory**: `server`
+- **Build Command**: `npm install`
+- **Start Command**: `npm start`
+- **Environment Variables**:
+  - `NODE_VERSION`: `18`
+  - `MONGO_URI`: Your Atlas connection string.
+  - `JWT_SECRET`: A secure random string.
+  - `GEMINI_API_KEY`: Your Google Gemini API key.
+  - `PORT`: `5000` (Render will override this, but good to set).
 
-## Frontend Navigation
-- Top‑level routes are defined in `client/src/App.jsx` and page components under `client/src/pages/*`
-- Protected admin views use `PrivateRoute` with role gating
+### 3. Frontend (Vercel)
+- Connect your repo to [Vercel](https://vercel.com/).
+- **Root Directory**: `client` (Edit the project settings > Root Directory).
+- **Framework Preset**: Vite
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL`: The URL of your deployed Render backend (e.g., `https://your-app.onrender.com`).
 
-## Troubleshooting
-- API says Unauthorized: ensure JWT token is set; login via `/auth`
-- No data loaded: run `npm run seed` or `POST /api/admin/refresh` after logging in as admin
-- Charts empty: confirm performance endpoints reachable and promises exist
-- `POST /api/admin/refresh-gemini` returns error: check `GEMINI_API_KEY` in `server/.env` is set
+## 🔄 Workflow & Data Lifecycle
+
+1.  **Initialization**:
+    - The app starts with seeded data (ministers/promises) if the DB is empty.
+2.  **News Ingestion (Admin)**:
+    - Admin triggers news fetch via the dashboard.
+    - Backend fetches RSS feeds and uses Gemini AI to classify news as "Related to Promise" or "General Criticism".
+3.  **User Interaction**:
+    - Users view dashboards, check promise status, and read related news.
+    - Users can report issues or ask queries.
+
+## 📝 API Endpoints (Brief)
+
+- **Auth**: `POST /api/auth/login`, `POST /api/auth/register`
+- **Ministers**: `GET /api/ministers`, `GET /api/ministers/:id`
+- **Promises**: `GET /api/promises`
+- **News**: `GET /api/news`
+- **Admin**: `POST /api/admin/fetch-news`, `POST /api/import/seed`
+
+## 📜 License
+
+This project is licensed under the MIT License.

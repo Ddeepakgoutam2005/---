@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import Query from '../models/Query.js';
-import NewsUpdate from '../models/NewsUpdate.js';
 import PromiseModel from '../models/Promise.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import mongoose from 'mongoose';

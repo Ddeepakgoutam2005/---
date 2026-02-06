@@ -72,7 +72,10 @@ router.get('/', async (req, res) => {
       or.push({ isPromiseCandidate: true });
       filter.$or = or;
     }
-    const items = await NewsUpdate.find(filter).sort({ publishedAt: -1 }).limit(Number(limit));
+    // Return all items if no limit specified (or limit is default 50 but we want all)
+    // The user requested to see all news, so we override the default limit or set it very high
+    const limitVal = limit && Number(limit) !== 50 ? Number(limit) : 0; 
+    const items = await NewsUpdate.find(filter).sort({ publishedAt: -1 }).limit(limitVal);
     res.json(items);
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch news' });
@@ -133,7 +136,7 @@ router.post('/fetch-and-save', async (req, res) => {
       url: i.link,
       sentiment: 'neutral',
       relevanceScore: 0.5,
-      publishedAt: i.pubDate ? new Date(i.pubDate) : undefined,
+      publishedAt: i.pubDate ? new Date(i.pubDate) : new Date(),
     }));
     let saved = 0;
     for (const a of raw) {

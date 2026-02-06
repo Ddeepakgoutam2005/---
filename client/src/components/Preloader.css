@@ -1,0 +1,187 @@
+
+/* Preloader Variables */
+:root {
+  /* Default to Light Mode */
+  --preloader-bg: #ffffff;
+  --preloader-text: #0a0a0a;
+  --accent-color-1: #ff003c;
+  --accent-color-2: #00f0ff;
+  --accent-color-3: #f0c05a;
+  --gradient-1: linear-gradient(90deg, #ff003c, #00f0ff);
+}
+
+/* Dark Mode Override */
+:root.dark {
+  --preloader-bg: #0a0a0a;
+  --preloader-text: #ffffff;
+}
+
+/* Preloader Container */
+.preloader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--preloader-bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999; /* Higher than everything */
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.glitch-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.glitch {
+    font-family: 'Inter', sans-serif; /* Using project font */
+    font-size: 3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    position: relative;
+    color: var(--preloader-text);
+    letter-spacing: 0.2em;
+    animation: glitch-skew 1s infinite linear alternate-reverse;
+}
+
+@media (min-width: 768px) {
+    .glitch {
+        font-size: 5rem;
+        letter-spacing: 0.3em;
+    }
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--accent-color-1);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--accent-color-2);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+.glitch-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--preloader-text);
+    margin-top: 1rem;
+    position: relative;
+    opacity: 0.8;
+    animation: text-flicker 2s infinite linear;
+}
+
+@media (min-width: 768px) {
+    .glitch-subtitle {
+        font-size: 1.2rem;
+    }
+}
+
+/* Loading Bar */
+.loading-bar {
+    width: 300px;
+    height: 2px;
+    background: rgba(125, 125, 125, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .loading-bar {
+        width: 400px;
+    }
+}
+
+.loading-progress {
+    height: 100%;
+    background: var(--gradient-1);
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: width 0.1s ease-out;
+    box-shadow: 0 0 10px var(--accent-color-2);
+}
+
+.scroll-indicator {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    color: var(--preloader-text);
+    text-transform: uppercase;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Animations */
+@keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    10% { transform: skew(-2deg); }
+    20% { transform: skew(2deg); }
+    30% { transform: skew(0deg); }
+    40% { transform: skew(0deg); }
+    50% { transform: skew(1deg); }
+    60% { transform: skew(0deg); }
+    70% { transform: skew(0deg); }
+    80% { transform: skew(-1deg); }
+    90% { transform: skew(0deg); }
+    100% { transform: skew(0deg); }
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(24px, 9999px, 81px, 0); }
+    20% { clip: rect(65px, 9999px, 3px, 0); }
+    40% { clip: rect(98px, 9999px, 12px, 0); }
+    60% { clip: rect(5px, 9999px, 67px, 0); }
+    80% { clip: rect(32px, 9999px, 94px, 0); }
+    100% { clip: rect(15px, 9999px, 49px, 0); }
+}
+
+@keyframes glitch-anim2 {
+    0% { clip: rect(65px, 9999px, 92px, 0); }
+    20% { clip: rect(12px, 9999px, 4px, 0); }
+    40% { clip: rect(54px, 9999px, 32px, 0); }
+    60% { clip: rect(87px, 9999px, 15px, 0); }
+    80% { clip: rect(5px, 9999px, 76px, 0); }
+    100% { clip: rect(43px, 9999px, 64px, 0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+@keyframes text-flicker {
+    0% { opacity: 0.8; }
+    2% { opacity: 0.1; }
+    4% { opacity: 0.8; }
+    19% { opacity: 0.8; }
+    21% { opacity: 0.1; }
+    23% { opacity: 0.8; }
+    80% { opacity: 0.8; }
+    83% { opacity: 0.4; }
+    87% { opacity: 0.8; }
+}

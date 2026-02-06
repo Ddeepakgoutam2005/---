@@ -5,119 +5,119 @@ export const indianMinisters = [
     ministry: 'Prime Minister',
     party: 'BJP',
     constituency: 'Varanasi',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/12/PM_Modi_2024.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/The_official_portrait_of_Shri_Narendra_Modi%2C_the_Prime_Minister_of_the_Republic_of_India.jpg',
     bio: 'Narendra Damodardas Modi is the 14th Prime Minister of India, in office since 2014.'
   },
   {
     name: 'Amit Shah',
     ministry: 'Home Affairs',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Amit_Shah_%28cropped%29.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Shri_Amit_Shah_in_Raigad.jpg',
     bio: 'Amit Anilchandra Shah is the Minister of Home Affairs and former President of BJP.'
   },
   {
     name: 'Nirmala Sitharaman',
     ministry: 'Finance',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/43/Smt._Nirmala_Sitharaman_official.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Am_11._April_2025_empfing_Au%C3%9Fenministerin_Beate_Meinl-Reisinger_die_indische_Finanzministerin_Nirmala_Sitharaman_in_Wien_%2854445397025%29_%28cropped%29.jpg',
     bio: 'Nirmala Sitharaman is the Minister of Finance of India.'
   },
   {
     name: 'Rajnath Singh',
     ministry: 'Defence',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Shri_Rajnath_Singh%2C_Hon%27ble_Defence_Minister.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/27/Defence_Minister_Shri_Rajnath_Singh.jpg',
     bio: 'Rajnath Singh is the Minister of Defence and former Chief Minister of Uttar Pradesh.'
   },
   {
     name: 'S. Jaishankar',
     ministry: 'External Affairs',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Dr._S._Jaishankar_%28cropped%29.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/The_official_portrait_of_External_Minister_Subrahmanyam_Jaishankar.jpg',
     bio: 'Subrahmanyam Jaishankar is the Minister of External Affairs and a former Foreign Secretary.'
   },
   {
     name: 'Nitin Gadkari',
     ministry: 'Road Transport and Highways',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Nitin_Gadkari_official.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8c/Nitin_Jairam_Gadkari.jpg',
     bio: 'Nitin Gadkari is known for infrastructure development, serving as Minister for Road Transport and Highways.'
   },
   {
     name: 'Piyush Goyal',
     ministry: 'Commerce and Industry',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Piyush_Goyal.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Piyush_Goyal_crop.jpg',
     bio: 'Piyush Goyal oversees Commerce and Industry; previously held Railways and Coal portfolios.'
   },
   {
     name: 'Ashwini Vaishnaw',
     ministry: 'Railways; Communications; Electronics and IT',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Ashwini_Vaishnaw_Official_Photograph.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/95/Shri_Ashwini_Vaishnaw_Minister.jpg',
     bio: 'Ashwini Vaishnaw is Minister for Railways and Information Technology, focusing on modernization.'
   },
   {
     name: 'Hardeep Singh Puri',
     ministry: 'Petroleum and Natural Gas; Housing and Urban Affairs',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Hardeep_Singh_Puri.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Hardeep_Singh_Puri_with_PM_Modi_%28cropped%29.jpg',
     bio: 'Hardeep Singh Puri is a former diplomat, leading urban affairs and energy portfolios.'
   },
   {
     name: 'Mansukh Mandaviya',
     ministry: 'Health and Family Welfare',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/07/Dr._Mansukh_Mandaviya.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Mansukh_Mandaviya_photo_2.png',
     bio: 'Mansukh Mandaviya is the Minister of Health and Family Welfare.'
   },
   {
     name: 'Dharmendra Pradhan',
     ministry: 'Education',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Dharmendra_Pradhan.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Dharmendra_Pradhan%2C_Minister_of_Education.jpg',
     bio: 'Dharmendra Pradhan is the Minister of Education, focusing on NEP implementation.'
   },
   {
     name: 'Anurag Thakur',
     ministry: 'Information and Broadcasting',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Anurag_Thakur.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Shri_Anurag_Singh_Thakur_in_March_2023.jpg',
     bio: 'Anurag Thakur served as Minister of Information and Broadcasting and Youth Affairs.'
   },
   {
     name: 'Smriti Irani',
     ministry: 'Women and Child Development',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Smriti_Irani_official_photo.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Smt._Smriti_Irani_in_April_2023.jpg',
     bio: 'Smriti Irani has served in multiple ministries, including Women and Child Development and HRD.'
   },
   {
     name: 'Pralhad Joshi',
     ministry: 'Parliamentary Affairs; Coal and Mines',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Pralhad_Joshi.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Pralhad_Joshi_in_2024.jpg',
     bio: 'Pralhad Joshi manages Parliamentary Affairs and previously Coal and Mines portfolios.'
   },
   {
     name: 'Gajendra Singh Shekhawat',
     ministry: 'Jal Shakti',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Gajendra_Singh_Shekhawat.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/46/The_Union_Minister_of_Culture_and_Tourism%2C_Shri_Gajendra_Singh_Shekhawat_addressing_at_the_inauguration_of_the_7th_Edition_of_the_International_Hospitality_Expo._2024_at_Greater_Noida%2C_in_Uttar_Pradesh_on_August_03%2C_2024_%28cropped%29.jpg',
     bio: 'Gajendra Singh Shekhawat leads the Ministry of Jal Shakti (Water Resources).'
   },
   {
     name: 'Narayan Rane',
     ministry: 'Micro, Small and Medium Enterprises',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Narayan_Rane.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/73/Narayan_Rane_with_PM_Modi_%28cropped%29.jpg',
     bio: 'Narayan Rane oversees MSME sector development.'
   },
   {
     name: 'Bhupender Yadav',
     ministry: 'Environment, Forest and Climate Change; Labour and Employment',
     party: 'BJP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bhupender_Yadav.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Union_Minister_Bhupender_Yadav.jpg',
     bio: 'Bhupender Yadav manages environment and labour portfolios.'
   }
   ,
@@ -126,21 +126,21 @@ export const indianMinisters = [
     name: 'Siddaramaiah',
     ministry: 'Chief Minister of Karnataka',
     party: 'INC',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Siddaramaiah_2016.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bc/The_Chief_Minister_of_Karnataka_Siddaramaiah_visits_PMO.jpg',
     bio: 'Siddaramaiah is serving as the Chief Minister of Karnataka from INC.'
   },
   {
     name: 'A. Revanth Reddy',
     ministry: 'Chief Minister of Telangana',
     party: 'INC',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/A_Revanth_Reddy_2021.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/Portrait_of_Telangana_CM_Revanth_Reddy.png',
     bio: 'A. Revanth Reddy is the Chief Minister of Telangana and senior INC leader.'
   },
   {
     name: 'P. Chidambaram',
     ministry: 'Finance (former)',
     party: 'INC',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/70/P_Chidambaram.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/P.Chidambaram_in_a_press_conference.jpg',
     bio: 'P. Chidambaram is a senior Congress leader and former Union Finance Minister.'
   },
   // AAP
@@ -148,14 +148,14 @@ export const indianMinisters = [
     name: 'Arvind Kejriwal',
     ministry: 'Chief Minister of Delhi',
     party: 'AAP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Arvind_Kejriwal.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Arvind_Kejriwal_2022_Official_Portrail_%28AI_enhanced%29.jpg',
     bio: 'Arvind Kejriwal is the National Convener of AAP and Chief Minister of Delhi.'
   },
   {
     name: 'Bhagwant Mann',
     ministry: 'Chief Minister of Punjab',
     party: 'AAP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Bhagwant_Mann_2022.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f8/Bhagwant_Mann.png',
     bio: 'Bhagwant Mann is the Chief Minister of Punjab from AAP.'
   },
   // BSP
@@ -163,50 +163,50 @@ export const indianMinisters = [
     name: 'Mayawati',
     ministry: 'Former Chief Minister of Uttar Pradesh',
     party: 'BSP',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/19/The_Chief_Minister_of_Uttar_Pradesh%2C_Kumari_Mayawati.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Mayawati_in_2016.jpg',
     bio: 'Mayawati is the President of BSP and served four terms as Chief Minister of Uttar Pradesh.'
   },
   // Additional ministers and chief ministers across parties to reach 50+
-  { name: 'Yogi Adityanath', ministry: 'Chief Minister of Uttar Pradesh', party: 'BJP', photoUrl: '', bio: 'Yogi Adityanath is the Chief Minister of Uttar Pradesh.' },
-  { name: 'Himanta Biswa Sarma', ministry: 'Chief Minister of Assam', party: 'BJP', photoUrl: '', bio: 'Himanta Biswa Sarma is the Chief Minister of Assam.' },
-  { name: 'Shivraj Singh Chouhan', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'BJP', photoUrl: '', bio: 'Shivraj Singh Chouhan served multiple terms as CM of Madhya Pradesh.' },
-  { name: 'Ashok Gehlot', ministry: 'Former Chief Minister of Rajasthan', party: 'INC', photoUrl: '', bio: 'Ashok Gehlot is a senior Congress leader and former CM of Rajasthan.' },
-  { name: 'Bhupesh Baghel', ministry: 'Former Chief Minister of Chhattisgarh', party: 'INC', photoUrl: '', bio: 'Bhupesh Baghel is a Congress leader and former CM of Chhattisgarh.' },
-  { name: 'Kamal Nath', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'INC', photoUrl: '', bio: 'Kamal Nath is a veteran Congress leader and former CM of MP.' },
-  { name: 'M. K. Stalin', ministry: 'Chief Minister of Tamil Nadu', party: 'DMK', photoUrl: '', bio: 'MK Stalin is the DMK leader and Chief Minister of Tamil Nadu.' },
-  { name: 'Pinarayi Vijayan', ministry: 'Chief Minister of Kerala', party: 'CPI(M)', photoUrl: '', bio: 'Pinarayi Vijayan is the Chief Minister of Kerala from CPI(M).'},
-  { name: 'Mamata Banerjee', ministry: 'Chief Minister of West Bengal', party: 'TMC', photoUrl: '', bio: 'Mamata Banerjee is the Chief Minister of West Bengal and leader of TMC.' },
-  { name: 'Nitish Kumar', ministry: 'Chief Minister of Bihar', party: 'JD(U)', photoUrl: '', bio: 'Nitish Kumar is the Chief Minister of Bihar.' },
-  { name: 'Eknath Shinde', ministry: 'Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: '', bio: 'Eknath Shinde is the Chief Minister of Maharashtra.' },
-  { name: 'Uddhav Thackeray', ministry: 'Former Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: '', bio: 'Uddhav Thackeray served as CM of Maharashtra.' },
-  { name: 'K. Chandrashekar Rao', ministry: 'Former Chief Minister of Telangana', party: 'BRS', photoUrl: '', bio: 'KCR is the founder of BRS and former CM of Telangana.' },
-  { name: 'Naveen Patnaik', ministry: 'Former Chief Minister of Odisha', party: 'BJD', photoUrl: '', bio: 'Naveen Patnaik served as the long-time CM of Odisha.' },
-  { name: 'Sarbananda Sonowal', ministry: 'Ports, Shipping and Waterways; AYUSH', party: 'BJP', photoUrl: '', bio: 'Sarbananda Sonowal is a Union Minister handling ports and AYUSH.' },
-  { name: 'Jyotiraditya Scindia', ministry: 'Civil Aviation', party: 'BJP', photoUrl: '', bio: 'Jyotiraditya Scindia is the Minister of Civil Aviation.' },
-  { name: 'Kiren Rijiju', ministry: 'Law and Justice', party: 'BJP', photoUrl: '', bio: 'Kiren Rijiju has served as Minister of Law and Justice.' },
-  { name: 'Arjun Ram Meghwal', ministry: 'Law and Justice (MoS)', party: 'BJP', photoUrl: '', bio: 'Arjun Ram Meghwal has served as MoS for Law and Justice.' },
-  { name: 'Rajeev Chandrasekhar', ministry: 'Electronics and IT (MoS)', party: 'BJP', photoUrl: '', bio: 'Rajeev Chandrasekhar is MoS for Electronics and IT.' },
-  { name: 'Giriraj Singh', ministry: 'Rural Development', party: 'BJP', photoUrl: '', bio: 'Giriraj Singh has served as Minister for Rural Development.' },
-  { name: 'Parshottam Rupala', ministry: 'Fisheries, Animal Husbandry and Dairying', party: 'BJP', photoUrl: '', bio: 'Parshottam Rupala leads fisheries and animal husbandry.' },
-  { name: 'Mahendra Nath Pandey', ministry: 'Heavy Industries', party: 'BJP', photoUrl: '', bio: 'Mahendra Nath Pandey has served as Minister of Heavy Industries.' },
-  { name: 'G. Kishan Reddy', ministry: 'Culture; Development of North Eastern Region', party: 'BJP', photoUrl: '', bio: 'G Kishan Reddy has served as Minister of Culture and DoNER.' },
-  { name: 'Anupriya Patel', ministry: 'Commerce and Industry (MoS)', party: 'Apna Dal (S)', photoUrl: '', bio: 'Anupriya Patel is MoS for Commerce and Industry.' },
-  { name: 'Jitendra Singh', ministry: 'PMO; Science and Technology (MoS)', party: 'BJP', photoUrl: '', bio: 'Jitendra Singh is MoS in PMO and S&T.' },
-  { name: 'V. K. Singh', ministry: 'Civil Aviation; MEA (MoS)', party: 'BJP', photoUrl: '', bio: 'Gen VK Singh has served as MoS in multiple ministries.' },
-  { name: 'Meenakshi Lekhi', ministry: 'External Affairs; Culture (MoS)', party: 'BJP', photoUrl: '', bio: 'Meenakshi Lekhi is MoS for External Affairs and Culture.' },
-  { name: 'Sadhvi Niranjan Jyoti', ministry: 'Consumer Affairs; Rural Development (MoS)', party: 'BJP', photoUrl: '', bio: 'Sadhvi Niranjan Jyoti is MoS in Consumer Affairs.' },
-  { name: 'Kaushal Kishore', ministry: 'Housing and Urban Affairs (MoS)', party: 'BJP', photoUrl: '', bio: 'Kaushal Kishore is MoS for Housing and Urban Affairs.' },
-  { name: 'Pankaj Chaudhary', ministry: 'Finance (MoS)', party: 'BJP', photoUrl: '', bio: 'Pankaj Chaudhary is MoS in the Ministry of Finance.' },
-  { name: 'Nityanand Rai', ministry: 'Home Affairs (MoS)', party: 'BJP', photoUrl: '', bio: 'Nityanand Rai is MoS for Home Affairs.' },
-  { name: 'Kailash Choudhary', ministry: 'Agriculture (MoS)', party: 'BJP', photoUrl: '', bio: 'Kailash Choudhary is MoS in Agriculture.' },
-  { name: 'Prahlad Singh Patel', ministry: 'Food Processing; Jal Shakti', party: 'BJP', photoUrl: '', bio: 'Prahlad Singh Patel has served in Jal Shakti and Food Processing.' },
-  { name: 'Ashwini Kumar Choubey', ministry: 'Health and Family Welfare (MoS)', party: 'BJP', photoUrl: '', bio: 'Ashwini Choubey is MoS for Health.' },
-  { name: 'Ramdas Athawale', ministry: 'Social Justice and Empowerment (MoS)', party: 'RPI(A)', photoUrl: '', bio: 'Ramdas Athawale is MoS for Social Justice and Empowerment.' },
-  { name: 'Shobha Karandlaje', ministry: 'Agriculture and Farmers Welfare (MoS)', party: 'BJP', photoUrl: '', bio: 'Shobha Karandlaje is MoS in Agriculture.' },
-  { name: 'Ajay Bhatt', ministry: 'Defence; Tourism (MoS)', party: 'BJP', photoUrl: '', bio: 'Ajay Bhatt is MoS in Defence and Tourism.' },
-  { name: 'Bhagwanth Khuba', ministry: 'Chemicals and Fertilizers (MoS)', party: 'BJP', photoUrl: '', bio: 'Bhagwanth Khuba is MoS for Chemicals and Fertilizers.' },
-  { name: 'Faggan Singh Kulaste', ministry: 'Steel (MoS)', party: 'BJP', photoUrl: '', bio: 'Faggan Singh Kulaste is MoS in Steel.' },
-  { name: 'Rao Inderjit Singh', ministry: 'Statistics and Programme Implementation', party: 'BJP', photoUrl: '', bio: 'Rao Inderjit Singh leads Statistics and Programme Implementation.' }
+  { name: 'Yogi Adityanath', ministry: 'Chief Minister of Uttar Pradesh', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/12/PM_and_UP_CM_at_laying_the_foundation_stone_of_the_International_Cricket_Stadium_at_Varanasi%2C_in_Uttar_Pradesh_%283x4_cropped%29.jpg', bio: 'Yogi Adityanath is the Chief Minister of Uttar Pradesh.' },
+  { name: 'Himanta Biswa Sarma', ministry: 'Chief Minister of Assam', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/54/Himanta_Biswa_Sarma_in_2025.jpg', bio: 'Himanta Biswa Sarma is the Chief Minister of Assam.' },
+  { name: 'Shivraj Singh Chouhan', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Shivraj_Singh_Chouhan_2025.jpg', bio: 'Shivraj Singh Chouhan served multiple terms as CM of Madhya Pradesh.' },
+  { name: 'Ashok Gehlot', ministry: 'Former Chief Minister of Rajasthan', party: 'INC', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/55/PM_and_Gehlot_inaugurate_various_projects_at_Nathdwara_2023.jpg', bio: 'Ashok Gehlot is a senior Congress leader and former CM of Rajasthan.' },
+  { name: 'Bhupesh Baghel', ministry: 'Former Chief Minister of Chhattisgarh', party: 'INC', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Bhupesh_Baghel.jpg', bio: 'Bhupesh Baghel is a Congress leader and former CM of Chhattisgarh.' },
+  { name: 'Kamal Nath', ministry: 'Former Chief Minister of Madhya Pradesh', party: 'INC', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Kamal_Nath_2012.jpg', bio: 'Kamal Nath is a veteran Congress leader and former CM of MP.' },
+  { name: 'M. K. Stalin', ministry: 'Chief Minister of Tamil Nadu', party: 'DMK', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/The_Chief_Minister_of_Tamil_Nadu%2C_Thiru_MK_Stalin.jpg', bio: 'MK Stalin is the DMK leader and Chief Minister of Tamil Nadu.' },
+  { name: 'Pinarayi Vijayan', ministry: 'Chief Minister of Kerala', party: 'CPI(M)', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Chief_Minister_Pinarayi_Vijayan_2023.tif/400px-Chief_Minister_Pinarayi_Vijayan_2023.tif.jpg', bio: 'Pinarayi Vijayan is the Chief Minister of Kerala from CPI(M).'},
+  { name: 'Mamata Banerjee', ministry: 'Chief Minister of West Bengal', party: 'TMC', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Official_portrait_of_Mamata_Banerjee.jpg', bio: 'Mamata Banerjee is the Chief Minister of West Bengal and leader of TMC.' },
+  { name: 'Nitish Kumar', ministry: 'Chief Minister of Bihar', party: 'JD(U)', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/07/Nitish_Kumar_addressing_at_55th_anniversary_of_Vishwa_Shanti_Stupa_establishment_in_Rajgir_%28cropped%29.jpg', bio: 'Nitish Kumar is the Chief Minister of Bihar.' },
+  { name: 'Eknath Shinde', ministry: 'Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Eknath_Shinde_with_PM_Narendra_Modi_Cropped.jpg', bio: 'Eknath Shinde is the Chief Minister of Maharashtra.' },
+  { name: 'Uddhav Thackeray', ministry: 'Former Chief Minister of Maharashtra', party: 'Shiv Sena', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Uddhav_Thackeray%2C_President_of_Shiv_Sena-UBT.jpg', bio: 'Uddhav Thackeray served as CM of Maharashtra.' },
+  { name: 'K. Chandrashekar Rao', ministry: 'Former Chief Minister of Telangana', party: 'BRS', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Kalvakuntla_Chandrashekar_Rao.png', bio: 'KCR is the founder of BRS and former CM of Telangana.' },
+  { name: 'Naveen Patnaik', ministry: 'Former Chief Minister of Odisha', party: 'BJD', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Naveen_Patnaik.png', bio: 'Naveen Patnaik served as the long-time CM of Odisha.' },
+  { name: 'Sarbananda Sonowal', ministry: 'Ports, Shipping and Waterways; AYUSH', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Sarbananda_Sonowal_with_PM_Modi_%28cropped%29.jpg', bio: 'Sarbananda Sonowal is a Union Minister handling ports and AYUSH.' },
+  { name: 'Jyotiraditya Scindia', ministry: 'Civil Aviation', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Jyotiraditya_Scindia_at_the_India_Economic_Summit_2009.jpg', bio: 'Jyotiraditya Scindia is the Minister of Civil Aviation.' },
+  { name: 'Kiren Rijiju', ministry: 'Law and Justice', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Kiren_Rijiju_with_Modi_%28cropped%29.jpg', bio: 'Kiren Rijiju has served as Minister of Law and Justice.' },
+  { name: 'Arjun Ram Meghwal', ministry: 'Law and Justice (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Shri_Arjun_Ram_Meghwal.jpg', bio: 'Arjun Ram Meghwal has served as MoS for Law and Justice.' },
+  { name: 'Rajeev Chandrasekhar', ministry: 'Electronics and IT (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5a/Rajeev_Chandrasekhar_with_PM_Modi_%28cropped%29.jpg', bio: 'Rajeev Chandrasekhar is MoS for Electronics and IT.' },
+  { name: 'Giriraj Singh', ministry: 'Rural Development', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Giriraj_Singh_addressing_a_press_conference_on_the_achievements_of_the_Ministry_of_Micro%2C_Small_%26_Medium_Enterprises%2C_during_the_last_four_years%2C_in_New_Delhi_%28cropped%29.JPG', bio: 'Giriraj Singh has served as Minister for Rural Development.' },
+  { name: 'Parshottam Rupala', ministry: 'Fisheries, Animal Husbandry and Dairying', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/The_Union_Minister_for_Fisheries%2C_Animal_Husbandry_and_Dairying%2C_Shri_Parshottam_Rupala.jpg', bio: 'Parshottam Rupala leads fisheries and animal husbandry.' },
+  { name: 'Mahendra Nath Pandey', ministry: 'Heavy Industries', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/98/MN_Pandey.jpg', bio: 'Mahendra Nath Pandey has served as Minister of Heavy Industries.' },
+  { name: 'G. Kishan Reddy', ministry: 'Culture; Development of North Eastern Region', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/55/G._Kishan_Reddy_in_2025.jpg', bio: 'G Kishan Reddy has served as Minister of Culture and DoNER.' },
+  { name: 'Anupriya Patel', ministry: 'Commerce and Industry (MoS)', party: 'Apna Dal (S)', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/34/The_official_portrait_of_State_Minister_Anupriya_Patel.jpg', bio: 'Anupriya Patel is MoS for Commerce and Industry.' },
+  { name: 'Jitendra Singh', ministry: 'PMO; Science and Technology (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e2/The_Minister_of_State_for_Personnel%2C_Public_Grievances_%26_Pensions%2C_Dr._Jitendra_Singh_at_the_exclusive_interview_in_New_Delhi_on_August_4%2C_2024.jpg', bio: 'Jitendra Singh is MoS in PMO and S&T.' },
+  { name: 'V. K. Singh', ministry: 'Civil Aviation; MEA (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/41/DncrmowVYAA6c2i.jpg', bio: 'Gen VK Singh has served as MoS in multiple ministries.' },
+  { name: 'Meenakshi Lekhi', ministry: 'External Affairs; Culture (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Smt._Meenakshi_Lekhi_%28cropped%29.jpg', bio: 'Meenakshi Lekhi is MoS for External Affairs and Culture.' },
+  { name: 'Sadhvi Niranjan Jyoti', ministry: 'Consumer Affairs; Rural Development (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/04/The_Minister_of_State_for_Consumer_Affairs%2C_Food_%26_Public_Distribution_and_Rural_Development%2C_Sadhvi_Niranjan_Jyoti_addressing_at_the_Yoga_session_organized_by_DoCA%2C_Ministry_of_CA%2CF%26PD%2C_in_New_Delhi_on_June_10%2C_2022.jpg', bio: 'Sadhvi Niranjan Jyoti is MoS in Consumer Affairs.' },
+  { name: 'Kaushal Kishore', ministry: 'Housing and Urban Affairs (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/37/Kaushal_Kishore_cropped.jpg', bio: 'Kaushal Kishore is MoS for Housing and Urban Affairs.' },
+  { name: 'Pankaj Chaudhary', ministry: 'Finance (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Pankaj_Chaudhary_in_2021_%28cropped%29.jpg', bio: 'Pankaj Chaudhary is MoS in the Ministry of Finance.' },
+  { name: 'Nityanand Rai', ministry: 'Home Affairs (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Nityanand_Rai_%28cropped%29.jpg', bio: 'Nityanand Rai is MoS for Home Affairs.' },
+  { name: 'Kailash Choudhary', ministry: 'Agriculture (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Kailash_Choudhary_in_May_2022_%28cropped%29.jpg', bio: 'Kailash Choudhary is MoS in Agriculture.' },
+  { name: 'Prahlad Singh Patel', ministry: 'Food Processing; Jal Shakti', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c6/Prahlad_Singh_Patel.jpg', bio: 'Prahlad Singh Patel has served in Jal Shakti and Food Processing.' },
+  { name: 'Ashwini Kumar Choubey', ministry: 'Health and Family Welfare (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Ashwini_Kumar_Choubey.jpg', bio: 'Ashwini Choubey is MoS for Health.' },
+  { name: 'Ramdas Athawale', ministry: 'Social Justice and Empowerment (MoS)', party: 'RPI(A)', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Ramdas_Athawale_in_2018.jpg', bio: 'Ramdas Athawale is MoS for Social Justice and Empowerment.' },
+  { name: 'Shobha Karandlaje', ministry: 'Agriculture and Farmers Welfare (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Shobha_Karandlaje_with_PM_Modi.jpg', bio: 'Shobha Karandlaje is MoS in Agriculture.' },
+  { name: 'Ajay Bhatt', ministry: 'Defence; Tourism (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ea/Ajay_Bhatt_at_Intel_ISEF.jpg', bio: 'Ajay Bhatt is MoS in Defence and Tourism.' },
+  { name: 'Bhagwanth Khuba', ministry: 'Chemicals and Fertilizers (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Bhagwanth_Khuba_with_Prime_Minister_Narendra_Modi_%28cropped%29.jpg', bio: 'Bhagwanth Khuba is MoS for Chemicals and Fertilizers.' },
+  { name: 'Faggan Singh Kulaste', ministry: 'Steel (MoS)', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/02/Shri_Faggan_Singh_Kulaste_taking_charge_as_the_Minister_of_State_for_Steel%2C_in_New_Delhi_on_May_31%2C_2019_%28cropped%29.jpg', bio: 'Faggan Singh Kulaste is MoS in Steel.' },
+  { name: 'Rao Inderjit Singh', ministry: 'Statistics and Programme Implementation', party: 'BJP', photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Rao_Inderjit_Singh_taking_over_as_Minister_of_State_%28Independent_Charge%29_for_Planning_in_May_2014_%28cropped%29.jpg', bio: 'Rao Inderjit Singh leads Statistics and Programme Implementation.' }
 ];
 
 export const samplePromises = [

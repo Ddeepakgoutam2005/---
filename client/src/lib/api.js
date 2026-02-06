@@ -3,7 +3,12 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export async function apiGet(path) {
   const headers = {};
   if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-  const res = await fetch(`${API_URL}${path}`, { headers });
+  
+  // Add timestamp to prevent caching
+  const separator = path.includes('?') ? '&' : '?';
+  const url = `${API_URL}${path}${separator}_t=${Date.now()}`;
+  
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
   return res.json();
 }

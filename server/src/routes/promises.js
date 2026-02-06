@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import PromiseModel from '../models/Promise.js';
+import PromiseRelatedNews from '../models/PromiseRelatedNews.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -19,6 +20,16 @@ router.get('/:id', async (req, res) => {
   const p = await PromiseModel.findById(req.params.id).populate('minister');
   if (!p) return res.status(404).json({ error: 'Not found' });
   res.json(p);
+});
+
+router.get('/:id/related-news', async (req, res) => {
+  try {
+    const news = await PromiseRelatedNews.find({ promise: req.params.id }).sort({ publishedAt: -1 }).limit(5);
+    res.json(news);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.post('/', requireAuth, async (req, res) => {

@@ -19,7 +19,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 async function callGemini(prompt) {
   if (!GEMINI_API_KEY) return null;
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ async function fetchAndSaveFeed(feedUrl) {
     url: i.link,
     sentiment: 'neutral',
     relevanceScore: 0.5,
-    publishedAt: i.pubDate ? new Date(i.pubDate) : undefined,
+    publishedAt: i.pubDate ? new Date(i.pubDate) : new Date(),
   }));
   const articles = rawArticles.filter(isRelevantIndianPolitical);
   const ministers = await Minister.find({});

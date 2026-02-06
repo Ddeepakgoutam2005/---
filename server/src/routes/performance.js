@@ -5,18 +5,41 @@ import Minister from '../models/Minister.js';
 const router = Router();
 
 router.get('/summary', async (req, res) => {
-  const ministers = await Minister.find({});
-  const results = [];
-  for (const m of ministers) {
-    const promises = await PromiseModel.find({ minister: m._id });
-    const total = promises.length;
-    const completed = promises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
-    const broken = promises.filter(p => p.status === 'broken').length;
-    const completionRate = total ? Math.round((completed / total) * 100) : 0;
-    results.push({ minister: m.name, ministry: m.ministry, totalPromises: total, completed, broken, completionRate });
+  try {
+    const ministers = await Minister.find({}).lean();
+    const promises = await PromiseModel.find({}).lean();
+    
+    // Group promises by minister ID for O(1) access
+    const promiseMap = {}; 
+    for (const p of promises) {
+      const mid = p.minister.toString();
+      if (!promiseMap[mid]) promiseMap[mid] = [];
+      promiseMap[mid].push(p);
+    }
+
+    const results = ministers.map(m => {
+      const mPromises = promiseMap[m._id.toString()] || [];
+      const total = mPromises.length;
+      const completed = mPromises.filter(p => p.status === 'completed' || p.status === 'in_progress').length;
+      const broken = mPromises.filter(p => p.status === 'broken').length;
+      const completionRate = total ? Math.round((completed / total) * 100) : 0;
+      
+      return { 
+        minister: m.name, 
+        ministry: m.ministry, 
+        totalPromises: total, 
+        completed, 
+        broken, 
+        completionRate 
+      };
+    });
+
+    results.sort((a, b) => b.completionRate - a.completionRate);
+    res.json(results.map((r, i) => ({ ...r, ranking: i + 1 })));
+  } catch (error) {
+    console.error('Performance summary error:', error);
+    res.status(500).json({ message: 'Failed to fetch performance summary' });
   }
-  results.sort((a, b) => b.completionRate - a.completionRate);
-  res.json(results.map((r, i) => ({ ...r, ranking: i + 1 })));
 });
 
 // Monthly trends: counts of promises by status per month, optionally filtered by minister

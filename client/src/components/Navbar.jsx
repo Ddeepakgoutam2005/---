@@ -1,47 +1,101 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
+import ThemeToggle from './ThemeToggle.jsx';
+import LanguageSwitcher from './LanguageSwitcher.jsx';
+import { FiMenu, FiX } from 'react-icons/fi';
 
 export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
   useEffect(() => {
     setIsAdmin(!!user && user.role === 'admin');
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
   }, [user]);
 
+  const navLinkClass = ({ isActive }) => 
+    `text-sm font-medium transition-colors duration-200 hover:underline hover:underline-offset-4 ${isActive ? 'text-civic-blue font-bold dark:text-white underline underline-offset-4' : 'text-civic-gray-600 hover:text-civic-blue dark:text-gray-300 dark:hover:text-white'}`;
+
+  const mobileNavLinkClass = ({ isActive }) =>
+    `block px-4 py-2 text-base font-medium transition-colors duration-200 rounded-md ${isActive ? 'bg-civic-blue/10 text-civic-blue font-bold dark:text-white dark:bg-white/10' : 'text-civic-gray-600 hover:bg-civic-gray-50 hover:text-civic-blue dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white'}`;
+
   return (
-    <header className="sticky top-0 z-50 bg-slate-900/70 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-saffron via-white to-green rounded-full flex items-center justify-center shadow-sm">
-              <i className="fas fa-flag text-slate-200"></i>
+    <header className="sticky top-4 z-50 mx-4 mt-4">
+      <div className="bg-white/90 dark:bg-white/10 backdrop-blur-md border border-civic-gray-200 dark:border-white/20 rounded-2xl shadow-sm px-6 py-3 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-civic-blue dark:bg-civic-red rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              P
             </div>
-            <Link to="/" className="text-xl font-bold text-slate-100">Political Promise Tracker</Link>
+            <Link to="/" className="text-lg font-bold text-civic-blue dark:text-white tracking-tight">Promise Tracker</Link>
           </div>
-          <div className="flex items-center gap-4">
-            <nav className="hidden md:flex space-x-6">
-              <NavLink to="/" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Dashboard</NavLink>
-              <NavLink to="/ministers" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Ministers</NavLink>
-              <NavLink to="/promises" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Promises</NavLink>
-              <NavLink to="/news" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>News</NavLink>
-              <NavLink to="/privacy" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Privacy</NavLink>
-              {isAdmin && <NavLink to="/admin" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Admin</NavLink>}
-              {isAdmin && <NavLink to="/admin/queries" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Queries</NavLink>}
-              {user && <NavLink to="/my/queries" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>My Queries</NavLink>}
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            <nav className="flex space-x-6">
+              <NavLink to="/" className={navLinkClass}>Dashboard</NavLink>
+              <NavLink to="/ministers" className={navLinkClass}>Ministers</NavLink>
+              <NavLink to="/promises" className={navLinkClass}>Promises</NavLink>
+              <NavLink to="/news" className={navLinkClass}>News</NavLink>
+              <NavLink to="/privacy" className={navLinkClass}>Privacy</NavLink>
+              {isAdmin && <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>}
+              {isAdmin && <NavLink to="/admin/queries" className={navLinkClass}>Queries</NavLink>}
+              {user && <NavLink to="/my/queries" className={navLinkClass}>My Queries</NavLink>}
             </nav>
-            <div className="flex items-center gap-3">
+            
+            <div className="pl-6 border-l border-civic-gray-200 dark:border-white/10 flex items-center gap-4">
+              <LanguageSwitcher />
+              <ThemeToggle />
               {!user ? (
-                <NavLink to="/auth" className={({ isActive }) => `text-slate-200 hover:text-blue-300 transition-colors ${isActive ? 'text-blue-300 font-semibold' : ''}`}>Login</NavLink>
+                <NavLink to="/auth" className="text-sm font-medium text-civic-blue dark:text-white hover:text-civic-blue-light hover:underline hover:underline-offset-4 transition-colors">Login</NavLink>
               ) : (
-                <button onClick={logout} className="text-slate-200 hover:text-blue-300 transition-colors">Logout</button>
+                <button onClick={logout} className="text-sm font-medium text-civic-gray-500 dark:text-gray-300 hover:text-civic-red hover:underline hover:underline-offset-4 transition-colors">Logout</button>
               )}
             </div>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex items-center gap-4 md:hidden">
+            <LanguageSwitcher />
+            <ThemeToggle />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-civic-gray-600 dark:text-gray-300 hover:text-civic-blue dark:hover:text-white focus:outline-none"
+            >
+              {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 border-t border-civic-gray-200 dark:border-white/10 pt-4 animate-fadeIn">
+            <nav className="flex flex-col space-y-2">
+              <NavLink to="/" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Dashboard</NavLink>
+              <NavLink to="/ministers" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Ministers</NavLink>
+              <NavLink to="/promises" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Promises</NavLink>
+              <NavLink to="/news" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>News</NavLink>
+              <NavLink to="/privacy" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Privacy</NavLink>
+              {isAdmin && <NavLink to="/admin" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Admin</NavLink>}
+              {isAdmin && <NavLink to="/admin/queries" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Queries</NavLink>}
+              {user && <NavLink to="/my/queries" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>My Queries</NavLink>}
+              
+              <div className="pt-4 mt-2 border-t border-civic-gray-200 dark:border-white/10">
+                {!user ? (
+                  <NavLink to="/auth" className={mobileNavLinkClass} onClick={() => setIsMenuOpen(false)}>Login</NavLink>
+                ) : (
+                  <button 
+                    onClick={() => { logout(); setIsMenuOpen(false); }} 
+                    className="w-full text-left px-4 py-2 text-base font-medium text-civic-gray-600 hover:bg-civic-gray-50 hover:text-civic-red dark:text-gray-300 dark:hover:bg-white/5 transition-colors rounded-md"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

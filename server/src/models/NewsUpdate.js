@@ -13,6 +13,7 @@ const newsUpdateSchema = new mongoose.Schema({
   promiseScore: { type: Number, default: 0 },
   candidateLog: { type: String },
   candidateMinister: { type: mongoose.Schema.Types.ObjectId, ref: 'Minister', required: false },
+  processedByGemini: { type: Boolean, default: false },
   mentions: [{
     ministerName: { type: String },
     classification: { type: String },
@@ -22,5 +23,6 @@ const newsUpdateSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 newsUpdateSchema.index({ url: 1 }, { unique: true });
+newsUpdateSchema.index({ processedByGemini: 1 });
 
 export default mongoose.model('NewsUpdate', newsUpdateSchema);

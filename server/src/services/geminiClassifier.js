@@ -39,8 +39,15 @@ function buildBatchPrompt(items, ministers, rules) {
     '     "confidence": number ' +
     '   } | null ' +
     ' } ] }.' +
-    ' Only include a "promise" object when category is "promise" and there is a clear explicit commitment. Use ISO date format YYYY-MM-DD for dates.' +
-    ' Determine status based on explicit reporting: "completed" if the promise is reported implemented or finished, "in_progress" if rollout or implementation has begun, "broken" if explicitly failed or cancelled, else "pending".'
+    ' STRICT RULES:' +
+    ' 1. If the news is about a NEW promise being made (e.g., "I will...", "We plan to..."), set category="promise" and status="pending".' +
+    ' 2. If the news reports an EXISTING promise is now FULFILLED, COMPLETED, or IMPLEMENTED, set category="promise" and status="completed".' +
+    ' 3. If the news reports an EXISTING promise is FAILED, CANCELLED, or BROKEN, set category="promise" and status="broken".' +
+    ' 4. If the news reports progress (e.g., "construction started", "funds released") on an EXISTING promise, set category="promise" and status="in_progress".' +
+    ' 5. Only use category="critic" for general criticism, scandals, or allegations that do NOT strictly update the status of a specific promise.' +
+    ' 6. "promise" object is REQUIRED if category is "promise".' +
+    ' 7. Use ISO date format YYYY-MM-DD.' +
+    ' 8. IMPORTANT: If it is a status update, try to use the ORIGINAL promise title if inferred, otherwise use the news headline as title.'
   );
   const payload = {
     mode: 'BATCH_CLASSIFY',
@@ -57,7 +64,7 @@ function buildBatchPrompt(items, ministers, rules) {
   return `${header}\n${JSON.stringify(payload)}`;
 }
 
-export async function callGemini(prompt, modelName = 'gemini-1.5-flash') {
+export async function callGemini(prompt, modelName = 'gemini-2.5-flash') {
   if (!genAI) throw new Error('GEMINI_API_KEY not configured');
   try {
     const model = genAI.getGenerativeModel({ model: modelName });
@@ -128,4 +135,37 @@ export async function classifyBatch(items, ministers, rules) {
     throw new Error('Unexpected Gemini output: expected array');
   }
   return parsed;
+}
+
+export async function matchNewsToPromise(newsItem, promises) {
+  if (!promises || promises.length === 0) return null;
+  
+  const simplifiedPromises = promises.map(p => ({
+    id: p._id,
+    title: p.title,
+    description: p.description ? p.description.slice(0, 200) : ''
+  }));
+
+  const prompt = `
+    Analyze this news article and the provided list of promises.
+    Identify which SPECIFIC promise this news is criticizing, updating, or discussing.
+    
+    News Headline: "${newsItem.headline}"
+    News Content: "${newsItem.content ? newsItem.content.slice(0, 1000) : ''}"
+    
+    Promises:
+    ${JSON.stringify(simplifiedPromises)}
+    
+    Return ONLY a JSON object: { "matchFound": boolean, "promiseId": string | null, "confidence": number, "reason": string }
+    confidence should be between 0.0 and 1.0. 
+    Only return matchFound: true if you are fairly certain (confidence > 0.6).
+  `;
+
+  try {
+    const result = await callGemini(prompt);
+    return result;
+  } catch (e) {
+    console.error("Gemini promise matching error:", e);
+    return null;
+  }
 }

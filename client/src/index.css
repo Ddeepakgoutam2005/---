@@ -1,28 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base fonts from Google Fonts for better UI/UX */
 :root {
-  --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Poppins', Arial, 'Helvetica Neue', sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-html, body {
-  font-family: var(--font-sans);
-}
-
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-}
-
-/* Dark mode base */
-html.dark {
-  background-color: #0f172a; /* slate-900 */
-  color-scheme: dark;
-}
-
-/* Base text colors for readability in both themes */
-/* Force dark-only text color */
 body {
-  color: #e2e8f0; /* slate-200 */
+  @apply bg-white dark:bg-[#0a0a0a] text-civic-gray-900 dark:text-white font-sans antialiased;
+  /* cursor: none; Default cursor restored as per user request */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-sans font-bold text-civic-blue dark:text-white tracking-tight;
+}
+
+/* Custom scrollbar for data-heavy views */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-civic-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-civic-gray-400;
 }
