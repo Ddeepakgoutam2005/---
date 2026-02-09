@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { connectDB } from './utils/db.js';
 import authRoutes from './routes/auth.js';
 import ministerRoutes from './routes/ministers.js';
@@ -49,7 +50,7 @@ app.use('/api/chatbot', chatbotRoutes);
 
 // Serve static files from the React app in production
 const clientBuildPath = path.join(__dirname, '../../client/dist');
-if (process.env.NODE_ENV === 'production' || process.env.SERVE_CLIENT === 'true') {
+if (fs.existsSync(clientBuildPath) && (process.env.NODE_ENV === 'production' || process.env.SERVE_CLIENT === 'true')) {
   app.use(express.static(clientBuildPath));
 
   app.get('*', (req, res) => {
