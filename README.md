@@ -19,118 +19,88 @@ An end-to-end web application that tracks political promises made by Indian mini
 - **Containerization**: Docker & Docker Compose
 - **AI Integration**: Google Gemini AI (for news classification)
 
-## 📂 Project Structure
-
-- **client/**: React frontend application.
-- **server/**: Express backend API.
-- **server/scripts/**: Utility scripts for seeding data, fetching news, and admin tasks.
-- **docker-compose.yml**: Orchestrates both services.
-
 ---
 
 ## 🐳 Running with Docker (Recommended)
 
-The easiest way to run the project is using Docker. This ensures all dependencies are correctly configured and provides a consistent environment.
+The easiest way to run the project after cloning from GitHub.
 
-### Prerequisites
+### 1. Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-### Setup & Run
-1. **Clone the repository**:
+### 2. Setup Environment Variables
+Before building the containers, you **MUST** provide your API keys and secrets.
+
+1. Create a `.env` file in the **root directory**:
    ```bash
-   git clone https://github.com/Ddeepakgoutam2005/---.git
-   cd Capstone
+   cp .env.example .env
    ```
+2. Open the `.env` file and fill in your secrets:
+   - `MONGO_URI`: Your MongoDB Atlas connection string.
+   - `GEMINI_API_KEY`: Your key from [Google AI Studio](https://aistudio.google.com/).
+   - `OPENROUTER_API_KEY`: Your OpenRouter or OpenAI key.
+   - `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID for social login.
+   - `JWT_SECRET`: A long random string for session security.
 
-2. **Configure Environment**:
-   - Create a `.env` file in the root directory.
-   - Use `.env.example` as a template:
-     ```bash
-     cp .env.example .env
-     ```
-   - Update `MONGO_URI` with your MongoDB Atlas connection string and other secrets.
+> **Note**: These variables will be automatically passed to both the client and server containers during build.
 
-3. **Build and Start**:
-   ```bash
-   docker-compose up --build -d
-   ```
+### 3. Build and Start
+Run this command in the root directory:
+```bash
+docker-compose up --build -d
+```
 
-4. **Access the App**:
-   - **Frontend**: [http://localhost:3000](http://localhost:3000)
-   - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
-
-### Useful Docker Commands
-- **View logs**: `docker-compose logs -f`
-- **View specific service logs**: `docker-compose logs -f server` or `docker-compose logs -f client`
-- **Stop containers**: `docker-compose down`
-- **Rebuild images**: `docker-compose up --build`
+### 4. Access the App
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
 
 ---
 
 ## 💻 Running Locally (Manual Setup)
 
-If you prefer not to use Docker, follow these steps:
+If you prefer not to use Docker:
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v20 or higher)
-- [MongoDB](https://www.mongodb.com/) (Atlas or Local)
+### 1. Install Dependencies
+```bash
+npm install
+cd client && npm install --legacy-peer-deps
+cd ../server && npm install --legacy-peer-deps
+```
 
-### Setup & Run
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Ddeepakgoutam2005/---.git
-   cd Capstone
-   ```
+### 2. Configure Environment
+1. Follow the same `.env` setup as described in the Docker section.
+2. Ensure you have Node.js (v20+) and MongoDB installed locally.
 
-2. **Install Dependencies**:
-   ```bash
-   # Install root dependencies
-   npm install
+### 3. Run the Project
+Open two terminals:
 
-   # Install client dependencies
-   cd client && npm install --legacy-peer-deps
+**Terminal 1 (Backend):**
+```bash
+cd server
+npm run dev
+```
 
-   # Install server dependencies
-   cd ../server && npm install --legacy-peer-deps
-   ```
-
-3. **Configure Environment**:
-   - Create a `.env` file in the root directory.
-   - Populate it using `.env.example`.
-
-4. **Run the Project**:
-   Open two terminals:
-
-   **Terminal 1 (Backend):**
-   ```bash
-   cd server
-   npm run dev
-   ```
-
-   **Terminal 2 (Frontend):**
-   ```bash
-   cd client
-   npm run dev
-   ```
-
-5. **Access the App**:
-   - **Frontend**: `http://localhost:5173` (Vite default)
-   - **Backend**: `http://localhost:5000`
+**Terminal 2 (Frontend):**
+```bash
+cd client
+npm run dev
+```
 
 ---
 
-## 🏗 Docker Architecture Details
+## 📂 Project Structure
 
-- **Backend (server/Dockerfile)**: Uses a lightweight `node:20-alpine` image. Runs on port 5000.
-- **Frontend (client/Dockerfile)**: 
-  - **Stage 1 (Build)**: Uses `node:20-alpine` to build the React application.
-  - **Stage 2 (Serve)**: Uses `nginx:stable-alpine` to serve the static files on port 3000.
-- **Docker Compose**: Automatically links the `client` and `server` services and manages environment variables.
+- **client/**: React frontend application (Port 3000 in Docker, 5173 locally).
+- **server/**: Express backend API (Port 5000).
+- **server/scripts/**: Utility scripts for seeding data and fetching news.
+- **docker-compose.yml**: Orchestrates the full-stack environment.
 
----
+## 🏗 Docker Architecture
+- **Backend**: Uses `node:20-alpine`.
+- **Frontend**: Multi-stage build (Node build -> Nginx serve).
+- **Environment**: All keys from the root `.env` are injected into the containers.
 
 ## 🔄 Workflow & Data Lifecycle
-
 1. **Seeding**: Initial data can be seeded using `npm run seed` in the server directory.
-2. **News Fetching**: The system uses Cron jobs to fetch news, or you can run `npm run fetch:news` manually.
-3. **AI Classification**: News is automatically classified using Google Gemini AI based on minister names and promise indicators.
+2. **News Fetching**: The system uses Cron jobs to fetch news automatically.
+3. **AI Classification**: News is classified using Google Gemini AI based on minister names.
