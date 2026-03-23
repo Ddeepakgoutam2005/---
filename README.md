@@ -15,7 +15,8 @@ An end-to-end web application that tracks political promises made by Indian mini
 
 - **Frontend**: React, Vite, Tailwind CSS, Chart.js, Framer Motion
 - **Backend**: Node.js, Express.js
-- **Database**: MongoDB (with Mongoose)
+- **Database**: MongoDB (Atlas or Local)
+- **Containerization**: Docker & Docker Compose
 - **AI Integration**: Google Gemini AI (for news classification)
 
 ## 📂 Project Structure
@@ -23,99 +24,102 @@ An end-to-end web application that tracks political promises made by Indian mini
 - **client/**: React frontend application.
 - **server/**: Express backend API.
 - **server/scripts/**: Utility scripts for seeding data, fetching news, and admin tasks.
+- **docker-compose.yml**: Orchestrates both services.
 
-## 🏁 Getting Started
+---
+
+## 🐳 Running with Docker (Recommended)
+
+The easiest way to run the project is using Docker. This ensures all dependencies are correctly configured.
 
 ### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [MongoDB](https://www.mongodb.com/) (Local or Atlas) - *Optional for local dev (uses in-memory DB if missing)*
+### Setup & Run
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Ddeepakgoutam2005/---.git
+   cd Capstone
+   ```
 
-### Local Setup (Simultaneous)
+2. **Configure Environment**:
+   - Create a `.env` file in the root directory.
+   - Use `.env.example` as a template:
+     ```bash
+     cp .env.example .env
+     ```
+   - Update `MONGO_URI` with your MongoDB Atlas connection string.
 
-1.  **Clone the repository**
-2.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
-    (This installs dependencies for root, client, and server)
+3. **Build and Start**:
+   ```bash
+   docker-compose up --build -d
+   ```
 
-3.  **Environment Setup**:
-    - Create a `.env` file in the root directory.
-    - Copy contents from `.env.example`.
-    - *Note: For local development, `MONGO_URI` is optional. If skipped, it uses an in-memory database.*
+4. **Access the App**:
+   - **Frontend**: [http://localhost:3000](http://localhost:3000)
+   - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
 
-4.  **Run the App**:
-    ```bash
-    npm run dev
-    ```
-    - Server: `http://localhost:5000`
-    - Client: `http://localhost:5173`
+5. **Stop Containers**:
+   ```bash
+   docker-compose down
+   ```
 
-### Manual / Individual Start
+---
 
-**Server:**
-```bash
-cd server
-npm install
-npm run dev
-```
+## 💻 Running Locally (Manual Setup)
 
-**Client:**
-```bash
-cd client
-npm install
-npm run dev
-```
+If you prefer not to use Docker, follow these steps:
 
-## 🌍 Deployment Guide
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v20 or higher)
+- [MongoDB](https://www.mongodb.com/) (Atlas or Local)
 
-### 1. Database (MongoDB Atlas)
-- Create a cluster on [MongoDB Atlas](https://www.mongodb.com/atlas).
-- Get your connection string (e.g., `mongodb+srv://...`).
-- Allow access from anywhere (`0.0.0.0/0`) in Network Access.
+### Setup & Run
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Ddeepakgoutam2005/---.git
+   cd Capstone
+   ```
 
-### 2. Backend (Render)
-- Connect your repo to [Render](https://render.com/).
-- Create a **Web Service**.
-- **Root Directory**: `server`
-- **Build Command**: `npm install`
-- **Start Command**: `npm start`
-- **Environment Variables**:
-  - `NODE_VERSION`: `18`
-  - `MONGO_URI`: Your Atlas connection string.
-  - `JWT_SECRET`: A secure random string.
-  - `GEMINI_API_KEY`: Your Google Gemini API key.
-  - `PORT`: `5000` (Render will override this, but good to set).
+2. **Install Dependencies**:
+   ```bash
+   # Install root dependencies
+   npm install
 
-### 3. Frontend (Vercel)
-- Connect your repo to [Vercel](https://vercel.com/).
-- **Root Directory**: `client` (Edit the project settings > Root Directory).
-- **Framework Preset**: Vite
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Environment Variables**:
-  - `VITE_API_URL`: The URL of your deployed Render backend (e.g., `https://your-app.onrender.com`).
+   # Install client dependencies
+   cd client && npm install --legacy-peer-deps
+
+   # Install server dependencies
+   cd ../server && npm install --legacy-peer-deps
+   ```
+
+3. **Configure Environment**:
+   - Create a `.env` file in the root directory.
+   - Populate it using `.env.example`.
+
+4. **Run the Project**:
+   Open two terminals:
+
+   **Terminal 1 (Backend):**
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+   **Terminal 2 (Frontend):**
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+5. **Access the App**:
+   - **Frontend**: `http://localhost:5173` (Vite default)
+   - **Backend**: `http://localhost:5000`
+
+---
 
 ## 🔄 Workflow & Data Lifecycle
 
-1.  **Initialization**:
-    - The app starts with seeded data (ministers/promises) if the DB is empty.
-2.  **News Ingestion (Admin)**:
-    - Admin triggers news fetch via the dashboard.
-    - Backend fetches RSS feeds and uses Gemini AI to classify news as "Related to Promise" or "General Criticism".
-3.  **User Interaction**:
-    - Users view dashboards, check promise status, and read related news.
-    - Users can report issues or ask queries.
-
-## 📝 API Endpoints (Brief)
-
-- **Auth**: `POST /api/auth/login`, `POST /api/auth/register`
-- **Ministers**: `GET /api/ministers`, `GET /api/ministers/:id`
-- **Promises**: `GET /api/promises`
-- **News**: `GET /api/news`
-- **Admin**: `POST /api/admin/fetch-news`, `POST /api/import/seed`
-
-## 📜 License
-
-This project is licensed under the MIT License.
+1. **Seeding**: Initial data can be seeded using `npm run seed` in the server directory.
+2. **News Fetching**: The system uses Cron jobs to fetch news, or you can run `npm run fetch:news` manually.
+3. **AI Classification**: News is automatically classified using Google Gemini AI based on minister names and promise indicators.
