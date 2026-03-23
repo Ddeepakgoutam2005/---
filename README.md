@@ -30,7 +30,7 @@ An end-to-end web application that tracks political promises made by Indian mini
 
 ## 🐳 Running with Docker (Recommended)
 
-The easiest way to run the project is using Docker. This ensures all dependencies are correctly configured.
+The easiest way to run the project is using Docker. This ensures all dependencies are correctly configured and provides a consistent environment.
 
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
@@ -48,7 +48,7 @@ The easiest way to run the project is using Docker. This ensures all dependencie
      ```bash
      cp .env.example .env
      ```
-   - Update `MONGO_URI` with your MongoDB Atlas connection string.
+   - Update `MONGO_URI` with your MongoDB Atlas connection string and other secrets.
 
 3. **Build and Start**:
    ```bash
@@ -59,10 +59,11 @@ The easiest way to run the project is using Docker. This ensures all dependencie
    - **Frontend**: [http://localhost:3000](http://localhost:3000)
    - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
 
-5. **Stop Containers**:
-   ```bash
-   docker-compose down
-   ```
+### Useful Docker Commands
+- **View logs**: `docker-compose logs -f`
+- **View specific service logs**: `docker-compose logs -f server` or `docker-compose logs -f client`
+- **Stop containers**: `docker-compose down`
+- **Rebuild images**: `docker-compose up --build`
 
 ---
 
@@ -115,6 +116,16 @@ If you prefer not to use Docker, follow these steps:
 5. **Access the App**:
    - **Frontend**: `http://localhost:5173` (Vite default)
    - **Backend**: `http://localhost:5000`
+
+---
+
+## 🏗 Docker Architecture Details
+
+- **Backend (server/Dockerfile)**: Uses a lightweight `node:20-alpine` image. Runs on port 5000.
+- **Frontend (client/Dockerfile)**: 
+  - **Stage 1 (Build)**: Uses `node:20-alpine` to build the React application.
+  - **Stage 2 (Serve)**: Uses `nginx:stable-alpine` to serve the static files on port 3000.
+- **Docker Compose**: Automatically links the `client` and `server` services and manages environment variables.
 
 ---
 
