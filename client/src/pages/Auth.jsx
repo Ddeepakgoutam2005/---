@@ -98,14 +98,14 @@ export default function Auth() {
           </div>
 
           <form className="space-y-6" onSubmit={mode === 'login' ? doLogin : doSignup}>
-            <div className="flex justify-center w-full mb-6">
+            <div className="flex justify-center w-full mb-6 overflow-hidden">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setStatus('Google Login Failed')}
                 theme="filled_blue"
                 shape="pill"
                 text={mode === 'login' ? "signin_with" : "signup_with"}
-                width="350"
+                width="280"
               />
             </div>
             

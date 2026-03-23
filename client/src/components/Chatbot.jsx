@@ -38,7 +38,8 @@ export default function Chatbot() {
 
       setMessages(prev => [...prev, { role: 'assistant', content: response.reply }]);
     } catch (error) {
-      console.error('Chat error:', error);
+      // Use console.warn for non-critical errors to reduce console noise
+      console.warn('Chat request failed:', error.message || error);
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again later.' }]);
     } finally {
       setIsLoading(false);

@@ -22,6 +22,15 @@ export async function apiPost(path, body = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
   const res = await fetch(`${API_URL}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
+  if (!res.ok) {
+    let errorMsg = `POST ${path} failed: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      if (errorData.error) errorMsg += ` - ${errorData.error}`;
+    } catch (e) {
+      // ignore parse error
+    }
+    throw new Error(errorMsg);
+  }
   return res.json();
 }

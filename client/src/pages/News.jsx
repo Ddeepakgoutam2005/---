@@ -26,16 +26,23 @@ export default function News() {
       try {
         const reports = await apiGet('/api/queries/my');
         const userReportStatus = new Map();
-        reports.filter(r => r.relatedType === 'news').forEach(r => {
-          userReportStatus.set(r.relatedId, r.status);
-        });
+        if (Array.isArray(reports)) {
+          reports.filter(r => r.relatedType === 'news').forEach(r => {
+            userReportStatus.set(r.relatedId, r.status);
+          });
+        }
         
         newsItems = newsItems.map(n => ({
           ...n,
-          userReportStatus: userReportStatus.get(n._id) // 'open' or 'resolved' or undefined
+          userReportStatus: userReportStatus.get(n._id)
         }));
       } catch (e) {
-        console.error('Failed to fetch user reports', e);
+        // Silently fail or use a subtle warning if not authorized, to avoid console clutter
+        if (e.message?.includes('401') || e.message?.includes('403')) {
+           // Not logged in or expired, ignore
+        } else {
+           console.warn('Could not fetch user report status:', e.message);
+        }
       }
     }
 
